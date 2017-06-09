@@ -1,8 +1,8 @@
 *** Settings ***
 Suite Setup       用例初始化
-Resource          导游店面接口.txt
-Resource          数据.txt
-Resource          通用接口.txt
+Resource          导游端API.txt
+Resource          SQL.txt
+Resource          用户端API.txt
 Library           common.py
 
 *** Test Cases ***

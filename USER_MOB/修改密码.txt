@@ -1,12 +1,12 @@
 *** Settings ***
 Suite Setup       用例初始化
-Resource          ../通用接口.txt
-Resource          ../数据.txt
-Resource          ../前置流程.txt
+Resource          ../用户端API.txt
+Resource          ../SQL.txt
+Resource          ../Combo_API.txt
 
 *** Variables ***
-${mobile}         13486939171
 ${pwd}            123456
+${mobile}         19910505123
 
 *** Test Cases ***
 正确修改密码
@@ -30,4 +30,4 @@ ${pwd}            123456
 
 *** Keywords ***
 场景恢复
-    恢复_设置用户为不可用    ${mobile}
+    恢复_删除用户    ${mobile}

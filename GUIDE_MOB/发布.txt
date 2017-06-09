@@ -1,6 +1,6 @@
 *** Settings ***
-Resource          ../通用接口.txt
-Resource          ../前置流程.txt
-Resource          ../数据.txt
+Resource          ../用户端API.txt
+Resource          ../Combo_API.txt
+Resource          ../SQL.txt
 
 *** Test Cases ***

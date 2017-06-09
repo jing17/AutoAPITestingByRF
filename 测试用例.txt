@@ -5,9 +5,9 @@ Library           requests
 Library           Collections
 Library           DatabaseLibrary
 Library           common.py
-Resource          数据.txt
-Resource          通用接口.txt
-Resource          前置流程.txt
+Resource          SQL.txt
+Resource          用户端API.txt
+Resource          Combo_API.txt
 
 *** Variables ***
 
@@ -25,7 +25,7 @@ q
     ${res}    yh_修改密码    ${newPwd}    ${oldPwd}    ${userinfo['token']}    ${userinfo['userId']}
     log    ${res['message']}
     Should Be Equal As Numbers    ${res['code']}    200
-    恢复_设置用户为不可用    ${mobile}    #场景恢复
+    恢复_删除用户    ${mobile}    #场景恢复
 
 choujiang
     : FOR    ${n}    IN RANGE    1

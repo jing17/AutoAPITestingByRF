@@ -3,13 +3,14 @@ Library           RequestsLibrary
 Library           common.py
 
 *** Variables ***
-${url}             http://test.iqdod.com    # http://112.124.98.148:8080
+${url}            http://test.iqdod.com    # http://112.124.98.148:8080 \ \ http://test.iqdod.com
 
 *** Keywords ***
 yh_注册
-    [Arguments]    ${mobile}    ${password}    ${verifyCode}
+    [Arguments]    ${mobile}    ${password}    ${verifyCode}    ${invitedCode}=1234    ${countryCode}=86    ${appId}=1
     ${password}    Get MD5    ${password}
-    ${data}    Create Dictionary    mobile=${mobile}    password=${password}    verifyCode=${verifyCode}
+    ${data}    Create Dictionary    mobile=${mobile}    password=${password}    verifyCode=${verifyCode}    invitedCode=${invitedCode}    countryCode=${countryCode}
+    ...    appId=${appId}
     ${header}    Create Dictionary    Content-Type=application/json
     ${response}    Post Request    api    /services/account/register.do    data=${data}    headers=${header}
     Should Be Equal As Strings    ${response.status_code}    200

@@ -8,7 +8,7 @@ Library           DatabaseLibrary
 yh_获取注册验证码
     [Arguments]    ${mobile}
     连接数据库
-    ${str}    Query    SELECT code FROM develop.cs_code_send where mobile=${mobile} \ and type=1 and state='E' order by valid_time desc limit 1;
+    ${str}    Query    SELECT code FROM develop.cs_code_send where mobile=${mobile} \ and type="用户注册验证码" and state='E' order by valid_time desc limit 1;
     断开数据库连接
     [Return]    ${str[0][0]}
 
@@ -29,9 +29,9 @@ yh_获取原密码
     断开数据库连接
     [Return]    ${str[0][0]}
 
-恢复_设置用户为不可用
+恢复_删除用户
     [Arguments]    ${mobile}
     连接数据库
     ${str}    query    select user_id from develop.ts_user_info where mobile=${mobile} and state='E' order by user_id desc limit 1;
-    Run Keyword If    ${str}    Execute Sql String    update develop.ts_user_info set state="U" where mobile=${mobile} order by user_id desc limit 1;
+    Run Keyword If    ${str}    Execute Sql String    delete from \ develop.ts_user_info where mobile=${mobile} order by user_id desc limit 1;
     断开数据库连接
