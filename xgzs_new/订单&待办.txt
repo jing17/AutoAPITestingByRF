@@ -1,0 +1,55 @@
+*** Settings ***
+Library           RequestsLibrary
+Library           Public.py
+Resource          Public_Keyword.txt
+
+*** Variables ***
+&{headers}        Content-Length=106    Accept-Encoding=gzip    Accept=*/*    User-Agent=com.kakao.topbroker/3.0.9-debug Dalvik/1.6.0 (Linux; U; Android 4.4.2; SM705 Build/SANFRANCISCO)    Connection=keep-alive    Content-Type=application/x-www-form-urlencoded
+@{host}           sqapi.beta.tops001.com
+
+*** Keywords ***
+查看订单列表
+    [Arguments]    ${ak}    ${orderStatus}
+    ${time}    timenow
+    ${订单_SignData}    create dictionary    ak=${ak}    app=app_broker    pageSize=20    pageIndex=0    agent=android
+    ...    orderStatus=${orderStatus}
+    ${订单_sign}    sign    /Entrust/OrderList?    ${订单_SignData}    ${time}    app_broker
+    ${订单_Data}    create dictionary    ak=${ak}    app=app_broker    pageSize=20    pageIndex=0    agent=android
+    ...    orderStatus=${orderStatus}    time=${time}
+    ${result}    Post Request    销冠助手    /Entrust/OrderList?sign=${订单_sign}    ${订单_Data}    ${xgjj_headers}
+    [Teardown]
+    [Return]    ${result}
+
+查看待办列表
+    [Arguments]    ${ak}    ${BrokerKid}
+    ${time}    timenow
+    ${待办_SignData}    create dictionary    ak=${ak}    app=app_broker    agent=android    PageIndex=1    BrokerKid=${BrokerKid}
+    ${待办_sign}    sign    /BrokerCustomerNew/GetBrokerToDoList?    ${待办_SignData}    ${time}    app_broker
+    ${待办_Data}    create dictionary    ak=${ak}    app=app_broker    agent=android    PageIndex=1    BrokerKid=${BrokerKid}
+    ...    time=${time}
+    ${TodoList_result}    Post Request    销冠经纪    /BrokerCustomerNew/GetBrokerToDoList?sign=${待办_sign}    ${待办_Data}    ${xgjj_headers}
+    ${code}    get_code    ${TodoList_result.content}
+    ${Message}    get_message    ${TodoList_result.content}
+    [Return]    ${TodoList_result.content}
+
+查看订单待办数量
+    [Arguments]    ${ak}    ${BrokerKid}
+    ${time}    timenow
+    ${Num_SignData}    create dictionary    ak=${ak}    app=app_broker    agent=android
+    ${Num_sign}    sign    /BrokerApp/IndexApp/GetBrokerHomeData?    ${Num_SignData}    ${time}    app_broker
+    ${Num_Data}    create dictionary    ak=${ak}    app=app_broker    agent=android    time=${time}
+    ${Num_result}    Post Request    销冠经纪    /BrokerApp/IndexApp/GetBrokerHomeData?sign=${Num_sign}&BrokerKid=${BrokerKid}    ${Num_Data}    ${xgjj_headers}
+    ${code}    get_code    ${Num_result.content}
+    ${Message}    get_message    ${Num_result.content}
+    [Return]    ${Num_result}
+
+接口_/Admin/ClubToken
+    [Arguments]    ${sign}    ${agent}    ${appcode}    ${uk}    ${ak}
+    ${time}    timenow
+    ${接口_/Admin/ClubToken_SignData}    Create Dictionary    agent=android    app=app_broker    sign=${sign}
+    ${接口_/Admin/ClubToken_sign}    sign    /Admin/ClubToken    ${接口_/Admin/ClubToken_SignData}    ${time}    app_broker
+    ${接口_/Admin/ClubToken_Data}    Create Dictionary    agent=android    app=app_broker    agent=${agent}    appcode=${appcode}    uk=${uk}
+    ...    ak=${ak}
+    Create Session    api    @{host}[0]    ${headers}
+    ${接口_/Admin/ClubToken_Reponse}    Post Request    api    /Admin/ClubToken?sign=${接口_/Admin/ClubToken_sign}sign=${agent}    ${接口_/Admin/ClubToken_Data}    ${headers}
+    [Return]    ${接口_/Admin/ClubToken_Reponse}

@@ -1,0 +1,6 @@
+*** Settings ***
+Resource          ../通用接口.txt
+Resource          ../前置流程.txt
+Resource          ../数据.txt
+
+*** Test Cases ***

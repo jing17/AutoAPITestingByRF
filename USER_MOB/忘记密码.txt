@@ -1,0 +1,39 @@
+*** Settings ***
+Suite Setup       用例初始化
+Resource          ../通用接口.txt
+Resource          ../数据.txt
+Resource          ../前置流程.txt
+
+*** Variables ***
+${mobile}         13486939171
+${pwd}            123456
+
+*** Test Cases ***
+正确找回密码
+    [Setup]    Run Keywords    场景恢复
+    ...    AND    前置条件
+    ${newpwd}    Set Variable    111111
+    yh_发送找回密码验证码    ${mobile}    86
+    ${code}    yh_获取找回密码验证码    ${mobile}
+    ${res}    yh_找回密码    ${mobile}    ${newpwd}    ${code}
+    log    ${res['message']}
+    Should Be Equal As Numbers    ${res['code']}    200
+    [Teardown]    场景恢复
+
+验证码错误
+    [Setup]    Run Keywords    场景恢复
+    ...    AND    前置条件
+    ${newpwd}    Set Variable    111111
+    yh_发送找回密码验证码    ${mobile}    86
+    ${code}    Set Variable    000000
+    ${res}    yh_找回密码    ${mobile}    ${newpwd}    ${code}
+    log    ${res['message']}
+    Should Be Equal As Numbers    ${res['code']}    -1
+    [Teardown]    场景恢复
+
+*** Keywords ***
+前置条件
+    注册成功流程    ${mobile}    ${pwd}
+
+场景恢复
+    恢复_设置用户为不可用    ${mobile}

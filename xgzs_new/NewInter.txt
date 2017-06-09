@@ -1,0 +1,17 @@
+*** Settings ***
+Library           RequestsLibrary
+Library           AddInter.py
+Library           Public.py
+
+*** Keywords ***
+FollowUp_Add
+    [Arguments]    ${followType}    ${houseId}    ${ak}    ${action}    ${content}
+    ${time}    timenow
+    ${FollowUp_Add_SignData}    Create Dictionary    agent=android    app=app_broker    followType=${followType}    houseId=${houseId}    ak=${ak}
+    ...    action=${action}    content=${content}
+    ${FollowUp_Add_sign}    sign    /FollowUp/Add    ${FollowUp_Add_SignData}    ${time}    app_broker
+    ${FollowUp_Add_Data}    Create Dictionary    agent=android    app=app_broker    followType=${followType}    houseId=${houseId}    ak=${ak}
+    ...    action=${action}    content=${content}
+    Comment    Create Session    sqapi    @{sqapi_API}[1]    ${xgjj_headers}
+    ${FollowUp_Add_Reponse}    Post Request    销冠助手    /FollowUp/Add?sign=${FollowUp_Add_sign}    ${FollowUp_Add_Data}    ${xgjj_headers}
+    [Return]    ${FollowUp_Add_Reponse}

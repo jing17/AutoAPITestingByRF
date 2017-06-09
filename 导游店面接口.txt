@@ -1,0 +1,36 @@
+*** Settings ***
+Resource          数据.txt
+Resource          通用接口.txt
+Resource          前置流程.txt
+Library           RequestsLibrary
+
+*** Keywords ***
+dy_发布
+    [Arguments]    ${decorId}    ${extraFee}    ${guideId}    ${itemHours}    ${itemFee}    ${itemId}
+    ...    ${itemModel}    ${itemPic}    ${itemSit}    ${itemSpace}    ${itemType}    ${otherDesc}
+    ...    ${otherPlay}    ${item_sort}    ${item_state}    ${mealFee}    ${photo}    ${policy}
+    ...    ${profile}    ${restTime}    ${restType}    ${routeName}    ${branchId}    ${cityName}
+    ...    ${day}    ${scenicId}    ${scenicName}    ${scenicType}    ${route_sort}    ${route_state}
+    ...    ${tag}    ${token}    ${video}    ${workState}
+    ${header}    Create Dictionary    Content-Type=application/json
+    ${items}    Create Dictionary    itemFee=${itemFee}    itemId=${itemId}    itemModel=${itemModel}    itemPic=${itemPic}    itemSit=${itemSit}
+    ...    itemSpace=${itemSpace}    itemType=${itemType}    otherDesc=${otherDesc}    otherPlay=${otherPlay}    sort=${item_sort}    state=${item_state}
+    ${routes}    Create Dictionary    branchId=${branchId}    cityName=${cityName}    day=${day}    scenicId=${scenicId}    scenicName=${scenicName}
+    ...    scenicType=${scenicType}    sort=${route_sort}    state=${route_state}
+    ${data}    Create Dictionary    decorId=${decorId}    extraFee=${extraFee}    guideId=${guideId}    itemHours=${itemHours}    items=${items}
+    ...    mealFee=${mealFee}    photo=${photo}    policy=${policy}    profile=${profile}    restTime=${restTime}    restType=${restType}
+    ...    routeName=${routeName}    routes=${routes}    tag=${tag}    token=${token}    video=${video}    workState=${workState}
+    ${response}    Post Request    api    /services/publish/publish.do    data=${data}    headers=${header}
+    Should Be Equal As Numbers    ${response.status_code}    200
+    ${res}    to json    ${response.content}
+    [Return]    ${res}
+
+dy_查询导游店面
+
+dy_查询导游服务
+
+dy_查询导游线路
+
+dy_查询线路详情
+
+dy_线路审核

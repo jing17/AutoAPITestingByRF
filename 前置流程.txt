@@ -1,0 +1,21 @@
+*** Settings ***
+Resource          通用接口.txt
+Resource          数据.txt
+Library           common.py
+
+*** Keywords ***
+注册成功流程
+    [Arguments]    ${mobile}    ${pwd}
+    恢复_设置用户为不可用    ${mobile}    #前置条件
+    yh_发送注册验证码    ${mobile}    86
+    ${code}    yh_获取注册验证码    ${mobile}
+    yh_注册    ${mobile}    ${pwd}    ${code}
+
+登录成功流程
+    [Arguments]    ${mobile}=13486939171    ${password}=123456
+    ${pwd}    Get MD5    ${password}
+    恢复_设置用户为不可用    ${mobile}    #前置条件
+    注册成功流程    ${mobile}    ${pwd}
+    ${response}    yh_登录    ${mobile}    ${pwd}
+    ${res}    Create Dictionary    token=${response['result']['token']}    userId=${response['result']['userId']}
+    [Return]    ${res}

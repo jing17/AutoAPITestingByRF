@@ -1,0 +1,33 @@
+*** Settings ***
+Suite Setup       用例初始化
+Resource          ../通用接口.txt
+Resource          ../数据.txt
+Resource          ../前置流程.txt
+
+*** Variables ***
+${mobile}         13486939171
+${pwd}            123456
+
+*** Test Cases ***
+正确修改密码
+    [Setup]
+    ${newPwd}    Set Variable    123456
+    ${userinfo}    登录成功流程    ${mobile}    ${pwd}    #登录获取token
+    ${oldPwd}    yh_获取原密码    ${mobile}
+    ${res}    yh_修改密码    ${newPwd}    ${oldPwd}    ${userinfo['token']}    ${userinfo['userId']}
+    log    ${res['message']}
+    Should Be Equal As Numbers    ${res['code']}    200
+    [Teardown]    场景恢复
+
+原密码错误
+    ${newPwd}    Set Variable    123456
+    ${userinfo}    登录成功流程    ${mobile}    ${pwd}    #登录获取token
+    ${oldPwd}    Set Variable    000000
+    ${res}    yh_修改密码    ${newPwd}    ${oldPwd}    ${userinfo['token']}    ${userinfo['userId']}
+    log    ${res['message']}
+    Should Be Equal As Numbers    ${res['code']}    -1
+    [Teardown]    场景恢复
+
+*** Keywords ***
+场景恢复
+    恢复_设置用户为不可用    ${mobile}

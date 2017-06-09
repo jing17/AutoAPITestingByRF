@@ -1,0 +1,68 @@
+*** Settings ***
+Library           RequestsLibrary
+Resource          销冠助手.txt
+Library           BuiltIn
+Library           Collections
+
+*** Variables ***
+&{xgjj_headers}    User-Agent=com.kakao.topbroker/3.0.9-debug Dalvik/1.6.0 (Linux; U; Android 4.4.2; SM705 Build/SANFRANCISCO)    Content-Type=application/x-www-form-urlencoded    Accept-Encoding=gzip
+@{Oauth_Api}      http://oauth.test.tops001.com    http://oauth.beta.apitops.com    http://oauth.demo.tops001.com    http://oauth.apitops.com
+@{Xgzs_Api}       http://cjzs.test.tops001.com    http://cjzs.beta.tops001.com    http://cjzs.demo.tops001.com    http://xgzs.apitops.com
+@{Loginname}      15167972454    18668091016
+@{Password}       za123456    032411    kakao123789
+@{Xgjj_Api}       http://testtop.tops001.com:2000    http://apibroker.beta.tops001.com
+
+*** Keywords ***
+获取AK
+    [Timeout]
+    Comment    log    创建Session
+    Comment    Create Session    Oauth    ${Login_URL}    ${Login_headers}
+    Comment    Create Session    xgzs    ${xgzs_URL}    ${xgzs_headers}
+    Comment    log    获取AK
+    ${result1}    login    ${房账号}    ${password}
+    ${result2}    login    ${客账号}    ${pwd}
+    ${H_AK}    get_ak    ${result1}
+    ${C_AK}    get_ak    ${result2}
+    Comment    Set Global variable    ${H_AK}    ${AK1}
+    Comment    Set Global variable    ${C_AK}    ${AK2}
+    Comment    @{ak}    Create List    ${H_AK}    ${C_AK}
+    [Return]    ${H_AK}    ${C_AK}
+
+login
+    [Arguments]    ${loginName}    ${password}
+    ${pwd}    Public.Get MD5 Value    ${password}    #MD5加密
+    ${time}    timenow
+    ${Login_SignData}    Create Dictionary    agent=android    app=app_broker    getLoginToken=1    loginName=${loginName}    password=${pwd}
+    ${Login_Sign}    sign    /Authorization/Login    ${Login_SignData}    ${time}    app_broker
+    ${Login_Data}    Create Dictionary    agent=android    app=app_broker    getLoginToken=1    loginName=${loginName}    password=${pwd}
+    ...    time=${time}
+    Create Session    Oauth    @{Oauth_Api}[1]    ${xgjj_headers}
+    ${Login_Reponse}=    Post Request    Oauth    /Authorization/Login?sign=${Login_Sign}    ${Login_Data}
+    [Return]    ${Login_Reponse}
+
+连接一手房测试数据库
+    Connect To Database Using Custom Params    pyodbc    'DRIVER={SQL Server};SERVER=121.41.24.225,1433;DATABASE=TOP_CRM_KaKao;UID=tops_sqlserver;PWD=tops001.com'
+    ${经纪人账号}    query    select top 1 F_Phone, NewID() as random \ FROM dbo.T_Broker WHERE F_PassWord='F59BD65F7EDAFB087A81D4DCA06C4910' \ order by random
+    log    ${经纪人账号[0][0]}
+    [Return]    ${经纪人账号[0][0]}
+
+用例初始化
+    Comment    log    测试环境
+    Comment    Create Session    Oauth    @{Oauth_Api}[0]
+    Comment    Create Session    销冠助手    @{Xgzs_Api}[0]    ${xgjj_headers}
+    log    预发布环境
+    Create Session    Oauth    @{Oauth_Api}[1]    ${xgjj_headers}
+    Create Session    销冠助手    @{Xgzs_Api}[1]    ${xgjj_headers}
+    Create Session    销冠经纪    @{Xgjj_Api}[1]    ${xgjj_headers}
+    Comment    log    演示环境
+    Comment    Create Session    Oauth    @{Oauth_Api}[2]
+    Comment    Create Session    销冠助手    @{Xgzs_Api}[2]    ${xgjj_headers}
+    Comment    log    正式环境
+    Comment    Create Session    Oauth    @{Oauth_Api}[3]
+    Comment    Create Session    销冠助手    @{Xgzs_Api}[3]    ${xgjj_headers}
+    Comment    log    获取帐号信息
+    ${result1}    login    @{Loginname}[0]    @{Password}[0]
+    ${result2}    login    @{Loginname}[1]    @{Password}[1]
+    Set Global Variable    ${H_AK}    ${result1.json()['Data']['AccessToken']}
+    Set Global Variable    ${C_AK}    ${result2.json()['Data']['AccessToken']}
+    Set Global Variable    ${H_BrokerKid}    ${result1.json()['Data']['BrokerID']}

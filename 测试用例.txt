@@ -1,0 +1,16 @@
+*** Settings ***
+Suite Setup       用例初始化
+Library           Selenium2Library
+Library           requests
+Library           Collections
+Library           DatabaseLibrary
+Library           common.py
+Resource          数据.txt
+Resource          通用接口.txt
+Resource          前置流程.txt
+
+*** Variables ***
+
+*** Test Cases ***
+test
+    yh_发送注册验证码    13486939171    86

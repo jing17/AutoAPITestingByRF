@@ -1,0 +1,75 @@
+*** Settings ***
+Library           RequestsLibrary
+Library           Public.py
+
+*** Keywords ***
+添加文字跟进
+    [Arguments]    ${houseId}    ${ak}    ${content}
+    [Documentation]    *followType: 0-文字;1-图片;2-录音;3-位置;*
+    ${time}    timenow
+    ${FollowUpAdd_SignData}    Create Dictionary    app=app_broker    agent=android    followType=0    houseId=${houseId}    ak=${ak}
+    ...    action=1    content=${content}
+    ${FollowUpAdd_Sign}    Sign    /FollowUp/Add?    ${FollowUpAdd_SignData}    ${time}    app_broker
+    ${FollowUpAdd_Data}    Create Dictionary    app=app_broker    agent=android    followType=0    houseId=${houseId}    ak=${ak}
+    ...    action=1    content=${content}    time=${time}
+    Comment    Create Session    FollowUpAdd    ${xgzs_URL}    ${xgzs_headers}
+    ${FollowUpAdd_addr}    Post Request    销冠助手    /FollowUp/Add?sign=${FollowUpAdd_Sign}    ${FollowUpAdd_Data}
+    [Return]    ${FollowUpAdd_addr.content}
+
+添加图片跟进
+    [Arguments]    ${houseId}    ${ak}    ${content}    ${filename}
+    ${time}    timenow
+    ${FollowUpAdd_SignData}    Create Dictionary    app=app_broker    agent=android    followType=1    houseId=${houseId}    ak=${ak}
+    ...    action=1    filename=${filename}    content=${content}
+    ${FollowUpAdd_Sign}    Sign    /FollowUp/Add?    ${FollowUpAdd_SignData}    ${time}    app_broker
+    ${FollowUpAdd_Data}    Create Dictionary    app=app_broker    agent=android    followType=1    houseId=${houseId}    ak=${ak}
+    ...    action=1    filename=${filename}    content=${content}    time=${time}
+    Comment    Create Session    FollowUpAdd    ${Xgzs_URL}    ${xgzs_headers}
+    ${FollowUpAdd_addr}    Post Request    销冠助手    /FollowUp/Add?sign=${FollowUpAdd_Sign}    ${FollowUpAdd_Data}
+    [Return]    ${FollowUpAdd_addr.content}
+
+添加录音跟进
+    [Arguments]    ${houseId}    ${ak}    ${content}
+    ${time}    timenow
+    ${FollowUpAdd_SignData}    Create Dictionary    app=app_broker    agent=android    followType=2    houseId=${houseId}    ak=${ak}
+    ...    action=1    content=${content}    File-record=<file>,filename=${filename}
+    ${FollowUpAdd_Sign}    Sign    /FollowUp/Add?    ${FollowUpAdd_SignData}    ${time}    app_broker
+    ${FollowUpAdd_Data}    Create Dictionary    app=app_broker    agent=android    followType=2    houseId=${houseId}    ak=${ak}
+    ...    action=1    content=${content}    File-record=<file>,filename=${filename}    time=${time}
+    Comment    Create Session    FollowUpAdd    ${xgzs_URL}    ${xgzs_headers}
+    ${FollowUpAdd_addr}    Post Request    销冠助手    /FollowUp/Add?sign=${FollowUpAdd_Sign}    ${FollowUpAdd_Data}
+    [Return]    ${FollowUpAdd_addr.content}
+
+添加位置跟进
+    [Arguments]    ${houseId}    ${ak}    ${content}    ${lng}    ${lat}    ${mapName}
+    ...    ${mapAddress}
+    ${time}    timenow
+    ${FollowUpAdd_SignData}    Create Dictionary    app=app_broker    agent=android    followType=3    houseId=${houseId}    ak=${ak}
+    ...    action=1    content=${content}    lng=${lng}    lat=${lat}    mapName=${mapName}    mapAddress=${mapAddress}
+    ${FollowUpAdd_Sign}    Sign    /FollowUp/Add?    ${FollowUpAdd_SignData}    ${time}    app_broker
+    ${FollowUpAdd_Data}    Create Dictionary    app=app_broker    agent=android    followType=3    houseId=${houseId}    ak=${ak}
+    ...    action=1    content=${content}    lng=${lng}    lat=${lat}    mapName=${mapName}    mapAddress=${mapAddress}
+    ...    time=${time}
+    Comment    Create Session    FollowUpAdd    ${xgzs_URL}    ${xgzs_headers}
+    ${FollowUpAdd_addr}    Post Request    销冠助手    /FollowUp/Add?sign=${FollowUpAdd_Sign}    ${FollowUpAdd_Data}
+    [Return]    ${FollowUpAdd_addr.content}
+
+获取跟进列表
+    [Arguments]    ${id}    ${ak}
+    ${time}    timenow
+    ${FollowUpList_SignData}    Create Dictionary    app=app_broker    agent=android    type=0    id=${id}    ak=${ak}
+    ${FollowUpList_Sign}    Sign    /FollowUp/List?    ${FollowUpList_SignData}    ${time}    app_broker
+    ${FollowUpList_Data}    Create Dictionary    app=app_broker    agent=android    type=0    id=${id}    ak=${ak}
+    ...    time=${time}
+    Comment    Create Session    FollowUpList    ${Xgzs_Api}    ${xgjj_headers}
+    ${FollowUpList_addr}    Post Request    销冠助手    /FollowUp/List?sign=${FollowUpList_Sign}    ${FollowUpList_Data}
+    [Return]    ${FollowUpList_addr.content}
+
+删除跟进
+    [Arguments]    ${FollowUpId}    ${ak}
+    ${time}    timenow
+    ${FollowUpDelete_SignData}    create Dictionary    ak=${ak}    app=app_broker    Ids=${FollowUpId}    agent=android
+    ${FollowUpDelete_Sign}    sign    /FollowUp/Delete?    ${FollowUpDelete_SignData}    ${time}    app_broker
+    ${FollowUpDelete_Data}    create Dictionary    ak=${ak}    app=app_broker    Ids=${FollowUpId}    agent=android    time=${time}
+    Comment    Create Session    FollowUpDelete    ${xgzs_URL}    ${xgzs_headers}
+    ${FollowUpDelete_Addr}    post Request    FollowUpDelete    /FollowUp/Delete?sign=${FollowUpDelete_Sign}    ${FollowUpDelete_Data}

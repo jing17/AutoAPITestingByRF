@@ -1,0 +1,2 @@
+*** Settings ***
+Resource          ../通用接口.txt

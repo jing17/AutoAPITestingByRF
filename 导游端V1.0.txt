@@ -1,0 +1,10 @@
+*** Settings ***
+Suite Setup       用例初始化
+Resource          导游店面接口.txt
+Resource          数据.txt
+Resource          通用接口.txt
+Library           common.py
+
+*** Test Cases ***
+正确发布导游店面
+    dy_发布

@@ -1,0 +1,3 @@
+*** Settings ***
+Library           Public.py
+Library           RequestsLibrary

@@ -1,0 +1,174 @@
+*** Settings ***
+Suite Setup       用例初始化
+Resource          销冠助手.txt
+Resource          Public_Keyword.txt
+Resource          订单&待办.txt
+Resource          跟进.txt
+Library           AddInter.py
+Resource          NewInter.txt
+
+*** Variables ***
+@{sqapi}          http://sqapi.beta.tops001.com
+
+*** Test Cases ***
+test_followUp
+    ${content}    set variable    一个月内会提价
+    ${id}    set variable    198
+    ${文字_return}    FollowUp_Add    ${id}    ${H_AK}    ${content}
+    Comment    ${图片_return}    添加图片跟进    ${id}    ${H_AK}    ${content}    ${FileName}
+
+销冠经纪_Login
+    log    正确的账户名和密码
+    ${LoginName0}    Set Variable    15167972454
+    ${Password0}    Set Variable    za123456
+    ${exp_code0}    set variable    0
+    ${Messgae_0}    set variable
+    ${Login_return0}    login    ${LoginName0}    ${Password0}
+    ${login_Code0}    get_code    ${Login_return0}
+    ${Message1}    get_message    ${Login_return0}
+    should be equal as numbers    ${exp_code0}    ${login_Code0}
+    log    错误的密码
+    ${LoginName1}    Set Variable    15167972454
+    ${Password1}    Set Variable    asdasda
+    ${exp_code1}    set variable    -1
+    ${Messgae_1}    set variable    登录名或密码错误
+    ${Login_return1}    login    ${LoginName1}    ${Password1}
+    ${login_Code1}    get_code    ${Login_return1}
+    ${Message1}    get_message    ${Login_return1}
+    should be equal as numbers    ${exp_code1}    ${login_Code1}
+    should contain    ${Login_return1}    ${Messgae_1}
+    log    错误的账号
+    ${LoginName2}    Set Variable    1516797
+    ${Password2}    Set Variable    032411
+    ${exp_code2}    set variable    2002
+    ${Messgae_2}    set variable    登录名 不存在或被删除
+    ${Login_return2}    login    ${LoginName2}    ${Password2}
+    ${login_Code2}    get_code    ${Login_return2}
+    ${Message2}    get_message    ${Login_return2}
+    should be equal as numbers    ${exp_code2}    ${login_Code2}
+    should contain    ${Login_return2}    ${Messgae_2}
+    log    账号密码为空
+    ${LoginName3}    Set Variable
+    ${Password3}    Set Variable
+    ${exp_code3}    set variable    3012
+    ${Messgae_3}    set variable    loginName : 文本长度必须大于1,小于50
+    ${Login_return3}    login    ${LoginName3}    ${Password3}
+    ${login_Code3}    get_code    ${Login_return3}
+    ${Message3}    get_message    ${Login_return3}
+    should be equal as numbers    ${exp_code3}    ${login_Code3}
+    should contain    ${Login_return3}    ${Messgae_3}
+
+获取出售房源列表
+    ${H_AK}    ${C_AK}    获取AK
+    log    准备全部状态的测试数据    #1：有效 2：成交 3：他售 4：无效 0:全部
+    ${houseStatus_0}    set variable    0
+    ${exp_code0}    set variable    0
+    ${Messgae_0}    set variable
+    ${Result_0}    List_获取出售房源列表    ${H_AK}    ${houseStatus_0}
+    ${SaleHouseList_Code0}    get_code    ${Result_0}
+    ${SaleHouseList_Message0}    get_message    ${Result_0}
+    should be equal as numbers    ${SaleHouseList_Code0}    ${exp_code0}
+    log    准备有效状态的测试数据
+    ${houseStatus_1}    set variable    1
+    ${Result_1}    List_获取出售房源列表    ${H_AK}    ${houseStatus_1}
+    ${SaleHouseList_Code1}    get_code    ${Result_1}
+    should be equal as numbers    ${SaleHouseList_Code1}    ${exp_code0}
+    log    准备成交状态的测试数据
+    ${houseStatus_2}    set variable    2
+    ${Result_2}    List_获取出售房源列表    ${H_AK}    ${houseStatus_2}
+    ${SaleHouseList_Code2}    get_code    ${Result_2}
+    should be equal as numbers    ${SaleHouseList_Code2}    ${exp_code0}
+    log    准备他售状态的测试数据
+    ${houseStatus_3}    set variable    3
+    ${Result_3}    List_获取出售房源列表    ${H_AK}    ${houseStatus_3}
+    ${SaleHouseList_Code3}    get_code    ${Result_3}
+    should be equal as numbers    ${SaleHouseList_Code2}    ${exp_code0}
+    log    准备无效状态的测试数据
+    ${houseStatus_4}    set variable    4
+    ${Result_4}    List_获取出售房源列表    ${H_AK}    ${houseStatus_4}
+    ${SaleHouseList_Code4}    get_code    ${Result_4}
+    should be equal as numbers    ${SaleHouseList_Code4}    ${exp_code0}
+    log    错误数据的测试
+    log    准备房源状态为空的测试数据
+    ${houseStatus_5}    set variable
+    ${exp_code1}    set variable    3004
+    ${Messgae_1}    set variable    参数:houseStatus 格式错误,应为(int)格式
+    ${Result_5}    List_获取出售房源列表    ${H_AK}    ${houseStatus_5}
+    ${SaleHouseList_Code5}    get_code    ${Result_5}
+    should be equal as numbers    ${SaleHouseList_Code5}    ${exp_code1}
+    should contain    ${Result_5}    ${Messgae_1}
+    log    准备错误数据
+    ${houseStatus_6}    set variable    10
+    ${Result_6}    List_获取出售房源列表    ${H_AK}    ${houseStatus_6}
+    ${SaleHouseList_Code6}    get_code    ${Result_6}
+    Comment    should be equal as numbers    ${SaleHouseList_Code6}    ${exp_code1}
+    Comment    should contain    ${Result_6}    ${Messgae_1}
+
+诚意金_获取意向房源列表
+    log    保证ak正确
+    log    委托单号正常    #获取和该委托单相关的已合作带看且未成交的房源
+    ${CEntrustID}    LinkMySql_查询买房客户委托单号    (select EntrustId \ from cjzs_buycustomer where HouseStatus=1 and IsDeleted=0 \ and CityId=112 and BrokerId=54112 and EntrustId like 'WTS%' Order by CreateTime desc ) limit 1
+    ${exp_code0}    set variable    0
+    ${Messgae_0}    set variable
+    ${results0}    诚意金_获取意向房源列表    ${C_AK}    ${CEntrustID}
+    ${诚意金意向房源列表_Code0}    get_code    ${results0}
+    should be equal as numbers    ${诚意金意向房源列表_Code0}    ${exp_code0}
+    log    委托单号为空
+    ${CEntrustID1}    set variable
+    ${exp_code1}    set variable    1
+    ${Messgae_1}    set variable    客户委托单编号不能为空!
+    ${results1}    诚意金_获取意向房源列表    ${C_AK}    ${CEntrustID1}
+    ${诚意金意向房源列表_Code1}    get_code    ${results1}
+    ${诚意金意向房源列表_Message1}    get_Message    ${results1}
+    should contain    ${results1}    ${Messgae_1}
+    log    委托单号格式不对
+    ${CEntrustID2}    set variable    123
+    ${exp_code2}    set variable    0
+    ${Messgae_2}    set variable
+    ${results2}    诚意金_获取意向房源列表    ${C_AK}    ${CEntrustID2}
+    ${诚意金意向房源列表_Code2}    get_code    ${results2}
+    ${诚意金意向房源列表_Message2}    get_Message    ${results2}
+    should be equal as numbers    ${诚意金意向房源列表_Code2}    ${exp_code2}
+
+LinkMysql_连接房源库
+    Connect To Database Using Custom Params    pymysql    host='rdswd6l0y421gu8vhrayf.mysql.rds.aliyuncs.com',port =3306,user='commondata',passwd='5CFGTUjscnKCIG8kyxg0qd7EZ26aPO',db='commondata',charset='utf8'
+    ${Villagename}    Query    select name from house_building where city_id=112 and name not like '%（%'and name not like '%¡¤%' \ Order by rand() limit 1
+    &{Villagename}    Query    select name from house_building where city_id=112 and name not like '%（%'and name not like '%¡¤%'
+    log    ${Villagename[0][0]}
+    log    &{Villagename}
+
+1111
+    ${帖子类型}    set variable    3
+    ${source}    set variable    2
+    ${发帖内容}    set variable    hello
+    ${result}    TopicAdd1    ${H_Ak}    ${H_BrokerID}    ${帖子类型}    ${uk}    ${发帖内容}
+    log    结果=${result.json()}
+
+addInter
+    Comment    ${get}    set variable
+    AddInter    FollowUp    Add    NULL    followType,houseId,ak,action,content
+
+*** Keywords ***
+TopicAdd
+    [Arguments]    ${ak}    ${brokerId}    ${topicType}    ${source}    ${content}
+    ${time}    timenow
+    ${data}    create Dictionary    ak=${ak}    content=${content}    app=app_broker    topicType=${topicType}    source=${source}
+    ...    agent=android    brokerId=${brokerId}
+    ${sign}    sign    /topic/add?    ${data}    ${time}    app_broker
+    ${data1}    create Dictionary    ak=${ak}    content=${content}    app=app_broker    topicType=${topicType}    source=${source}
+    ...    agent=android    brokerId=${brokerId}    time=${time}
+    Create Session    sqapi    ${sqapi}    ${xgjj_headers}
+    ${result}    post request    sqapi    /topic/add?sign=${sign}    ${data1}
+    [Return]    ${result}
+
+TopicAdd1
+    [Arguments]    ${ak}    ${brokerId}    ${topicType}    ${uk}    ${content}
+    ${time}    timenow
+    ${data}    create Dictionary    ak=${ak}    content=${content}    uk=${uk}    topicType=${topicType}    talkType=0
+    ...    agent=android    brokerId=${brokerId}    appcode=test
+    ${sign}    sign    /topic/add?    ${data}    ${time}    app_broker
+    ${data1}    create Dictionary    ak=${ak}    content=${content}    uk=${uk}    topicType=${topicType}    talkType=0
+    ...    agent=android    brokerId=${brokerId}    appcode=test    time=${time}
+    Create Session    sqapi    @{sqapi}[0]    ${xgjj_headers}
+    ${result}    post request    sqapi    /topic/add?sign=${sign}    ${data1}
+    [Return]    ${result}

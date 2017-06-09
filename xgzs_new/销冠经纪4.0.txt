@@ -1,0 +1,482 @@
+*** Settings ***
+Suite Setup       用例初始化
+Test Setup
+Library           DatabaseLibrary
+Library           RequestsLibrary
+Library           String
+Library           Selenium2Library
+Library           Public.py
+Resource          销冠助手.txt
+Resource          订单&待办.txt
+Resource          跟进.txt
+Resource          Public_Keyword.txt
+Library           faker
+
+*** Variables ***
+
+*** Test Cases ***
+查看订单&待办
+    ${orderStatus}    set Variable    1    # 1-进行中；2-已完成；3-已关闭
+    ${return}    查看订单列表    ${H_ak}    ${orderStatus}
+    ${Todo_return}    查看待办列表    ${H_ak}    ${H_BrokerKid}
+    ${Num_return}    查看订单待办数量    ${H_ak}    ${H_BrokerKid}
+
+获取出售房源列表
+    ${result1}    login    @{Loginname}[0]    @{Password}[0]
+    ${HouseStatus}    Set Variable    1
+    ${SaleHouse_result}    List_获取出售房源列表    ${result1.json()['Data']['AccessToken']}    ${HouseStatus}
+    log    ${SaleHouse_result.json()['Message']}
+
+查看出售房源详情页
+    log    正常数据
+    ${LoginName}    Set Variable    15167972454
+    ${Password}    Set Variable    032411
+    ${login_result}    login    ${LoginName}    ${Password}
+    ${Ak}    get_ak    ${login_result}
+    ${HouseId}    LinkMysql_查询房源ID
+    ${SaleHouseDetail_return}    房源_获取出售房源详情    ${Ak}    ${HouseId}
+
+获取出租房源列表
+    log    正常数据
+    ${LoginName}    Set Variable    15167972454
+    ${Password}    Set Variable    032411
+    ${HouseStatus}    Set Variable    1    #1：有效 2：成交 3：他售 4：无效
+    ${login_result}    login    ${LoginName}    ${Password}
+    ${Ak}    get_ak    ${login_result}
+    ${RentHouseCount}    ${RentHouse_result}    房源_获取出租房源列表    ${Ak}    ${HouseStatus}
+    ${Message}    get_message    ${RentHouse_result}
+
+获取户型标签
+    Comment    log    正常数据
+    Comment    ${LoginName}    Set Variable    15167972454
+    Comment    ${Password}    Set Variable    032411
+    Comment    ${LabelType}    Set Variable    4    # 标签类型 1-付款方式 2-可签约人 \ 3-房源权属 4-户型 5-装修情况 6限制行业 7-房源标签
+    ${HouseLabel_result}    ${HouseType}    标签_获取户型标签    ${H_Ak}
+    ${Message}    get_message    ${HouseLabel_result}
+
+获取房源小区
+    Comment    log    正常数据
+    Comment    ${LoginName}    Set Variable    15167972454
+    Comment    ${Password}    Set Variable    032411
+    ${HouseStatus}    Set Variable    1    #1：有效 2：成交 3：他售 4：无效
+    ${CityName}    Set Variable    杭州市
+    ${VillageName}    Set Variable    钱塘雅苑
+    ${LabelType}    Set Variable    4    # 标签类型 1-付款方式 2-可签约人 \ 3-房源权属 4-户型 5-装修情况 6限制行业 7-房源标签
+    ${Address}    ${Lat}    ${Lng}    ${Village_result}    房源_获取房源小区    ${H_Ak}    ${VillageName}
+    ...    ${CityName}
+
+新增出售房源
+    Comment    ${HouseStatus}    Set Variable    1    #1：有效 2：成交 3：他售 4：无效
+    Comment    ${CityName}    Set Variable    杭州市
+    Comment    ${VillageName}    Set Variable    钱塘雅苑
+    Comment    ${LabelType}    Set Variable    4    # 标签类型 1-付款方式 2-可签约人 \ 3-房源权属 4-户型 5-装修情况 6限制行业 7-房源标签
+    Comment    ${H_AK}    ${C_AK}    获取AK
+    Comment    ${HouseType}    ${HouseLabel_result}    标签_获取户型标签    ${H_AK}
+    Comment    ${Address}    ${Lat}    ${Lng}    ${Village_result}    房源_获取房源小区    ${H_AK}
+    ...    ${VillageName}    ${CityName}
+    Comment    ${HouseId}    ${result}    房源_新增出售房源    ${H_AK}    ${Address}    ${VillageName}
+    ...    ${HouseType}    ${Lat}    ${Lng}
+    Comment    Comment    ${SaleHouseMatchList_count}    获取出售房源匹配列表    ${Ak}    ${HouseId}    ${HouseStatus}
+    Comment    Comment    ${SaleHouseDetail_return}    房源_获取出售房源详情    ${Ak}    ${HouseId}
+    Comment    Comment    ${SetHouseStatus_return}    设置出售房源状态_无效    ${Ak}    ${HouseId}
+    Repeat Keyword    1    AddSaleHouse    ${C_Ak}
+
+新增出租房源
+    Comment    ${HouseStatus}    Set Variable    1    #1：有效 2：成交 3：他售 4：无效
+    Comment    ${CityName}    Set Variable    杭州市
+    Comment    ${VillageName}    Set Variable    春江花月
+    Comment    Comment    ${VillageName}    LinkMySql_查询房源小区名称
+    Comment    ${LabelType}    Set Variable    4    # 标签类型 1-付款方式 2-可签约人 \ 3-房源权属 4-户型 5-装修情况 6限制行业 7-房源标签
+    Comment    ${HouseLabel_result}    ${HouseType}    标签_获取户型标签    ${H_AK}
+    Comment    ${Village_result}    房源_获取房源小区    ${H_AK}    ${VillageName}    ${CityName}
+    Comment    ${result}    ${RentHouseId}    房源_新增出租房源    ${H_AK}    ${Village_result.json()['Data'][0]['Address']}    ${VillageName}
+    ...    ${HouseType}    ${Village_result.json()['Data'][0]['Lat']}    ${Village_result.json()['Data'][0]['Lng']}    ${Village_result.json()['Data'][0]['VillageCode']}
+    Repeat Keyword    1    AddRentHouse    ${C_Ak}
+
+新增求购客户
+    Comment    log    添加登录的账号密码
+    Comment    ${销冠助手_PropertyType}    Set Variable    1
+    Comment    ${销冠助手_最低价_StartQuote}    Set Variable    10
+    Comment    ${销冠助手_最高价_EndQuote}    Set Variable    500
+    Comment    ${销冠助手_最小面积_StartArea}    Set Variable    10
+    Comment    ${销冠助手_最大面积_EndArea}    Set Variable    200
+    Comment    ${level}    Set Variable    1
+    Comment    ${H_AK}    ${C_AK}    获取AK
+    Comment    ${HouseType}    ${HouseLabel_result}    标签_获取户型标签    ${H_AK}
+    Comment    ${HouseType}    Get_Housetype    ${HouseLabel_result}
+    Comment    ${BuyCustomerId}    客源_新增求购客户    ${H_AK}    ${HouseType}    ${销冠助手_最低价_StartQuote}    ${销冠助手_最高价_EndQuote}
+    ...    ${销冠助手_最小面积_StartArea}    ${销冠助手_最大面积_EndArea}
+    Repeat Keyword    1    AddBuyCustomer    ${C_Ak}
+
+新增求租客户
+    Comment    ${销冠助手_PropertyType}    Set Variable    1
+    Comment    ${销冠助手_最低价_StartQuote}    Set Variable    10
+    Comment    ${销冠助手_最高价_EndQuote}    Set Variable    500
+    Comment    ${销冠助手_最小面积_StartArea}    Set Variable    10
+    Comment    ${销冠助手_最大面积_EndArea}    Set Variable    200
+    Comment    ${level}    Set Variable    1
+    Comment    ${HouseLabel_result}    ${HouseType}    标签_获取户型标签    ${H_AK}
+    Comment    should be equal as numbers    ${HouseLabel_result.json()['Code']}    0    #Pass
+    Comment    log    获取户型Message=${HouseLabel_result.json()['Message']}
+    Comment    ${rentCustomer_result}    客源_新增求租客户    ${H_AK}    ${HouseType}    ${销冠助手_最低价_StartQuote}    ${销冠助手_最高价_EndQuote}
+    ...    ${销冠助手_最小面积_StartArea}    ${销冠助手_最大面积_EndArea}
+    Comment    should be equal as numbers    ${rentCustomer_result.json()['Code']}    0    #Pass
+    Comment    log    新增求租Message=${rentCustomer_result.json()['Message']}
+    Repeat Keyword    1    AddRentCustomer    ${C_Ak}
+
+合作流程_发起合作
+    repeat keyword    1    提交合作单
+
+合作流程_取消合作申请
+    ${OrderId}    LinkMysql_已发起的合作订单（房发起）
+    ${result}    合作流程_取消合作申请    ${H_Ak}    ${OrderId}
+
+合作流程_同意合作
+    ${OrderId}    LinkMysql_已发起的合作订单（房发起）
+    log    订单号=${OrderId}
+    ${result}    合作流程_同意合作    ${C_Ak}    ${OrderId}
+    log    Message=${result.json()['Message']}
+
+合作流程_拒绝合作
+    ${OrderId}    LinkMysql_已发起的合作订单（房发起）
+    ${result}    合作流程_拒绝合作    ${C_Ak}    ${OrderId}
+    log    Message=${result.json()['Message']}
+
+合作流程_带看到达
+    ${OrderId}    LinkMysql_可带看到达合作订单
+    ${result}    合作流程_带看到达    ${H_Ak}    ${OrderId}
+    log    Message=${result.json()['Message']}
+
+合作流程_发起成交(房)
+    ${销冠助手_成交单单备注_memo}    Set Variable    成交单备注
+    ${销冠助手_成交价_hammerPrice}    Set Variable    200
+    ${销冠助手_客分成_cCommission}    Set Variable    4
+    ${销冠助手_房分成_hCommission}    Set Variable    6
+    ${销冠助手_预估佣金占比_commissionTotalPerc}    Set Variable    3
+    ${销冠助手_预估佣金总额_commissionTotalPrice}    Evaluate    ${销冠助手_成交价_hammerPrice}*${销冠助手_预估佣金占比_commissionTotalPerc}*0.01
+    ${房提交成交单_Postcode}    Set Variable    400
+    ${OrderId}    LinkMysql_可发起成交订单
+    ${result}    合作流程_提交成交单    ${H_Ak}    ${OrderId}    ${房提交成交单_Postcode}    ${销冠助手_成交价_hammerPrice}    ${销冠助手_预估佣金占比_commissionTotalPerc}
+    ...    ${销冠助手_预估佣金总额_commissionTotalPrice}    ${销冠助手_房分成_hCommission}    ${销冠助手_客分成_cCommission}    ${销冠助手_成交单单备注_memo}
+    log    Message=${result.json()['Message']}
+
+合作流程_发起成交(客)
+    ${销冠助手_成交单单备注_memo}    Set Variable    成交单备注
+    ${销冠助手_成交价_hammerPrice}    Set Variable    200
+    ${销冠助手_客分成_cCommission}    Set Variable    4
+    ${销冠助手_房分成_hCommission}    Set Variable    6
+    ${销冠助手_预估佣金占比_commissionTotalPerc}    Set Variable    3
+    ${销冠助手_预估佣金总额_commissionTotalPrice}    Evaluate    ${销冠助手_成交价_hammerPrice}*${销冠助手_预估佣金占比_commissionTotalPerc}*0.01
+    ${客提交成交单_Postcode}    Set Variable    401
+    ${OrderId}    LinkMysql_可发起成交订单
+    ${result}    合作流程_提交成交单    ${C_Ak}    ${OrderId}    ${客提交成交单_Postcode}    ${销冠助手_成交价_hammerPrice}    ${销冠助手_预估佣金占比_commissionTotalPerc}
+    ...    ${销冠助手_预估佣金总额_commissionTotalPrice}    ${销冠助手_房分成_hCommission}    ${销冠助手_客分成_cCommission}    ${销冠助手_成交单单备注_memo}
+    log    Message=${result.json()['Message']}
+
+合作流程_取消成交(房)
+    ${OrderId}    LinkMysql_可取消的成交订单
+    ${房发起成交_Precode}    Set Variable    400    #房发起成交：400
+    ${result}    合作流程_取消成交    ${H_Ak}    ${OrderId}    ${房发起成交_Precode}
+    log    Message=${result.json()['Message']}
+
+合作流程_取消成交(客)
+    ${OrderId}    LinkMysql_可取消的成交订单
+    ${客发起成交_Precode}    Set Variable    401    #房发起成交：401
+    ${result}    合作流程_取消成交    ${C_Ak}    ${OrderId}    ${客发起成交_Precode}
+    log    Message=${result.json()['Message']}
+
+合作流程_拒绝成交(客)
+    ${OrderId}    LinkMysql_可取消的成交订单
+    ${房发起成交_Precode}    Set Variable    400    #房发起成交：400
+    ${result}    合作流程_拒绝成交    ${C_Ak}    ${OrderId}    ${房发起成交_Precode}
+    log    Message=${result.json()['Message']}
+
+合作流程_拒绝成交(房)
+    ${OrderId}    LinkMysql_可取消的成交订单
+    ${客发起成交_Precode}    Set Variable    401    #房发起成交：401
+    ${result}    合作流程_拒绝成交    ${H_Ak}    ${OrderId}    ${客发起成交_Precode}
+    log    Message=${result.json()['Message']}
+
+合作流程_同意成交(客)
+    ${OrderId}    LinkMysql_可取消的成交订单
+    ${房发起成交_Precode}    Set Variable    400    #房发起成交：400
+    ${result}    合作流程_同意成交    ${C_Ak}    ${OrderId}    ${房发起成交_Precode}
+    log    Message=${result.json()['Message']}
+
+合作流程_同意成交(房)
+    ${OrderId}    LinkMysql_可取消的成交订单
+    ${客发起成交_Precode}    Set Variable    401    #房发起成交：401
+    ${result}    合作流程_同意成交    ${H_Ak}    ${OrderId}    ${客发起成交_Precode}
+    log    Message=${result.json()['Message']}
+
+合作流程_取消合作(已同意合作)
+    ${销冠助手_房源ID_HouseId}    ${销冠助手_客源ID_CustomerId}    LinkMySql_查询匹配的房客源ID_预
+    ${SaleAmount}    LinkMySql_查询房源的售价    ${销冠助手_房源ID_HouseId}
+    ${Exp_code}    Set Variable    0
+    ${同意合作Precode}    Set Variable    110    #合作成功：110
+    ${销冠助手_发起合作方_source}    Set Variable    0
+    ${销冠助手_合作单备注_memo}    Set Variable    合作单备注
+    ${销冠助手_成交单单备注_memo}    Set Variable    成交单备注
+    ${销冠助手_客分成_cCommission}    Set Variable    5
+    ${销冠助手_房分成_hCommission}    Set Variable    5
+    ${销冠助手_预估佣金占比_commissionTotalPerc}    Set Variable    3
+    ${销冠助手_预估佣金总额_commissionTotalPrice}    Evaluate    ${SaleAmount}*${销冠助手_预估佣金占比_commissionTotalPerc}*0.01
+    ${销冠助手_房评价_labels}    Set Variable    非常好
+    ${FQHZ_result}    合作流程_发起合作    ${H_Ak}    ${销冠助手_发起合作方_source}    ${销冠助手_合作单备注_memo}    ${销冠助手_客分成_cCommission}    ${销冠助手_房分成_hCommission}
+    ...    ${销冠助手_预估佣金占比_commissionTotalPerc}    ${销冠助手_预估佣金总额_commissionTotalPrice}    ${销冠助手_房源ID_HouseId}    ${销冠助手_客源ID_CustomerId}
+    should be Equal as Numbers    ${FQHZ_result.json()['Code']}    ${Exp_code}
+    log    发起合作_Message=${FQHZ_result.json()['Message']}
+    ${TYHZ_result}    合作流程_同意合作    ${C_Ak}    ${FQHZ_result.json()['Data']}
+    should be Equal as Numbers    ${TYHZ_result.json()['Code']}    ${Exp_code}
+    log    同意合作_Message=${TYHZ_result.json()['Message']}
+    ${reason}    合作流程_取消合作理由    ${H_Ak}
+    log    ${reason.json()['Data']['Items'][0]['ReasonLs'][0]['ReasonName']}
+    should be Equal as Numbers    ${reason.json()['Code']}    ${Exp_code}
+    ${QXHZ_result}    合作流程_取消合作    ${H_Ak}    ${FQHZ_result.json()['Data']}    ${reason.json()['Data']['Items'][0]['ReasonLs'][0]['ReasonName']}    ${同意合作Precode}
+    log    取消合作_Message=${QXHZ_result.json()['Message']}
+    should be Equal as Numbers    ${QXHZ_result.json()['Code']}    ${Exp_code}
+
+合作流程_取消合作(已带看到达)
+    ${销冠助手_房源ID_HouseId}    ${销冠助手_客源ID_CustomerId}    LinkMySql_查询匹配的房客源ID_预
+    ${SaleAmount}    LinkMySql_查询房源的售价    ${销冠助手_房源ID_HouseId}
+    ${带看到达Precode}    Set Variable    310    #带看到达：110
+    ${Exp_code}    Set Variable    0
+    ${销冠助手_发起合作方_source}    Set Variable    0
+    ${销冠助手_合作单备注_memo}    Set Variable    合作单备注
+    ${销冠助手_成交单单备注_memo}    Set Variable    成交单备注
+    ${销冠助手_客分成_cCommission}    Set Variable    5
+    ${销冠助手_房分成_hCommission}    Set Variable    5
+    ${销冠助手_预估佣金占比_commissionTotalPerc}    Set Variable    3
+    ${销冠助手_预估佣金总额_commissionTotalPrice}    Evaluate    ${SaleAmount}*${销冠助手_预估佣金占比_commissionTotalPerc}*0.01
+    ${销冠助手_房评价_labels}    Set Variable    非常好
+    ${FQHZ_result}    合作流程_发起合作    ${H_Ak}    ${销冠助手_发起合作方_source}    ${销冠助手_合作单备注_memo}    ${销冠助手_客分成_cCommission}    ${销冠助手_房分成_hCommission}
+    ...    ${销冠助手_预估佣金占比_commissionTotalPerc}    ${销冠助手_预估佣金总额_commissionTotalPrice}    ${销冠助手_房源ID_HouseId}    ${销冠助手_客源ID_CustomerId}
+    should be Equal as Numbers    ${FQHZ_result.json()['Code']}    ${Exp_code}
+    log    发起合作_Message=${FQHZ_result.json()['Message']}
+    ${TYHZ_result}    合作流程_同意合作    ${C_Ak}    ${FQHZ_result.json()['Data']}
+    should be Equal as Numbers    ${TYHZ_result.json()['Code']}    ${Exp_code}
+    log    同意合作_Message=${TYHZ_result.json()['Message']}
+    ${result}    合作流程_带看到达    ${H_Ak}    ${FQHZ_result.json()['Data']}
+    log    ${result.json()['Message']
+    should be Equal as Numbers    ${result.json()['Code']}    ${Exp_code}
+    ${reason}    合作流程_取消合作理由    ${H_Ak}
+    log    ${reason.json()['Data']['Items'][0]['ReasonLs'][0]['ReasonName']}
+    should be Equal as Numbers    ${reason.json()['Code']}    ${Exp_code}
+    ${QXHZ_result}    合作流程_取消合作    ${H_Ak}    ${FQHZ_result.json()['Data']}    ${reason.json()['Data']['Items'][0]['ReasonLs'][0]['ReasonName']}    ${带看到达Precode}
+    log    取消合作_Message=${QXHZ_result.json()['Message']}
+    should be Equal as Numbers    ${QXHZ_result.json()['Code']}    ${Exp_code}
+
+合作流程_取消合作(房成交申请中)
+    ${销冠助手_房源ID_HouseId}    ${销冠助手_客源ID_CustomerId}    LinkMySql_查询匹配的房客源ID_预
+    ${SaleAmount}    LinkMySql_查询房源的售价    ${销冠助手_房源ID_HouseId}
+    ${房成交申请_Precode}    Set Variable    400    #房成交申请：400
+    ${Exp_code}    Set Variable    0
+    ${销冠助手_发起合作方_source}    Set Variable    0
+    ${销冠助手_合作单备注_memo}    Set Variable    合作单备注
+    ${销冠助手_成交单单备注_memo}    Set Variable    成交单备注
+    ${销冠助手_客分成_cCommission}    Set Variable    5
+    ${销冠助手_房分成_hCommission}    Set Variable    5
+    ${销冠助手_预估佣金占比_commissionTotalPerc}    Set Variable    3
+    ${销冠助手_预估佣金总额_commissionTotalPrice}    Evaluate    ${SaleAmount}*${销冠助手_预估佣金占比_commissionTotalPerc}*0.01
+    ${销冠助手_房评价_labels}    Set Variable    非常好
+    ${FQHZ_result}    合作流程_发起合作    ${H_Ak}    ${销冠助手_发起合作方_source}    ${销冠助手_合作单备注_memo}    ${销冠助手_客分成_cCommission}    ${销冠助手_房分成_hCommission}
+    ...    ${销冠助手_预估佣金占比_commissionTotalPerc}    ${销冠助手_预估佣金总额_commissionTotalPrice}    ${销冠助手_房源ID_HouseId}    ${销冠助手_客源ID_CustomerId}
+    should be Equal as Numbers    ${FQHZ_result.json()['Code']}    ${Exp_code}
+    log    发起合作_Message=${FQHZ_result.json()['Message']}
+    ${TYHZ_result}    合作流程_同意合作    ${C_Ak}    ${FQHZ_result.json()['Data']}
+    should be Equal as Numbers    ${TYHZ_result.json()['Code']}    ${Exp_code}
+    log    同意合作_Message=${TYHZ_result.json()['Message']}
+    ${result}    合作流程_带看到达    ${H_Ak}    ${FQHZ_result.json()['Data']}
+    log    ${result.json()['Message']
+    should be Equal as Numbers    ${result.json()['Code']}    ${Exp_code}
+    ${FQCJ_result}    合作流程_提交成交单（房）    ${H_Ak}    ${FQHZ_result.json()['Data']}    ${SaleAmount}    ${销冠助手_预估佣金占比_commissionTotalPerc}    ${销冠助手_预估佣金总额_commissionTotalPrice}
+    ...    ${销冠助手_房分成_hCommission}    ${销冠助手_客分成_cCommission}    ${销冠助手_成交单单备注_memo}
+    should be Equal as Numbers    ${FQCJ_result.json()['Code']}    ${Exp_code}
+    log    发起成交_Message=${FQCJ_result.json()['Message']}
+    ${reason}    合作流程_取消合作理由    ${H_Ak}
+    log    ${reason.json()['Data']['Items'][0]['ReasonLs'][0]['ReasonName']}
+    should be Equal as Numbers    ${reason.json()['Code']}    ${Exp_code}
+    ${QXHZ_result}    合作流程_取消合作    ${H_Ak}    ${FQHZ_result.json()['Data']}    ${reason.json()['Data']['Items'][0]['ReasonLs'][0]['ReasonName']}    ${房成交申请_Precode}
+    log    取消合作_Message=${QXHZ_result.json()['Message']}
+    should be Equal as Numbers    ${QXHZ_result.json()['Code']}    ${Exp_code}
+
+合作流程_取消合作(客成交申请中)
+    ${销冠助手_房源ID_HouseId}    ${销冠助手_客源ID_CustomerId}    LinkMySql_查询匹配的房客源ID_预
+    ${SaleAmount}    LinkMySql_查询房源的售价    ${销冠助手_房源ID_HouseId}
+    ${房成交申请_Precode}    Set Variable    401    #房成交申请：401
+    ${Exp_code}    Set Variable    0
+    ${销冠助手_发起合作方_source}    Set Variable    0
+    ${销冠助手_合作单备注_memo}    Set Variable    合作单备注
+    ${销冠助手_成交单单备注_memo}    Set Variable    成交单备注
+    ${销冠助手_客分成_cCommission}    Set Variable    5
+    ${销冠助手_房分成_hCommission}    Set Variable    5
+    ${销冠助手_预估佣金占比_commissionTotalPerc}    Set Variable    3
+    ${销冠助手_预估佣金总额_commissionTotalPrice}    Evaluate    ${SaleAmount}*${销冠助手_预估佣金占比_commissionTotalPerc}*0.01
+    ${销冠助手_房评价_labels}    Set Variable    非常好
+    ${FQHZ_result}    合作流程_发起合作    ${H_Ak}    ${销冠助手_发起合作方_source}    ${销冠助手_合作单备注_memo}    ${销冠助手_客分成_cCommission}    ${销冠助手_房分成_hCommission}
+    ...    ${销冠助手_预估佣金占比_commissionTotalPerc}    ${销冠助手_预估佣金总额_commissionTotalPrice}    ${销冠助手_房源ID_HouseId}    ${销冠助手_客源ID_CustomerId}
+    should be Equal as Numbers    ${FQHZ_result.json()['Code']}    ${Exp_code}
+    log    发起合作_Message=${FQHZ_result.json()['Message']}
+    ${TYHZ_result}    合作流程_同意合作    ${C_Ak}    ${FQHZ_result.json()['Data']}
+    should be Equal as Numbers    ${TYHZ_result.json()['Code']}    ${Exp_code}
+    log    同意合作_Message=${TYHZ_result.json()['Message']}
+    ${result}    合作流程_带看到达    ${H_Ak}    ${FQHZ_result.json()['Data']}
+    log    ${result.json()['Message']
+    should be Equal as Numbers    ${result.json()['Code']}    ${Exp_code}
+    ${FQCJ_result}    合作流程_提交成交单    ${C_Ak}    ${FQHZ_result.json()['Data']}    ${SaleAmount}    ${销冠助手_预估佣金占比_commissionTotalPerc}    ${销冠助手_预估佣金总额_commissionTotalPrice}
+    ...    ${销冠助手_房分成_hCommission}    ${销冠助手_客分成_cCommission}    ${销冠助手_成交单单备注_memo}
+    should be Equal as Numbers    ${FQCJ_result.json()['Code']}    ${Exp_code}
+    log    发起成交_Message=${FQCJ_result.json()['Message']}
+    ${reason}    合作流程_取消合作理由    ${C_Ak}
+    log    ${reason.json()['Data']['Items'][0]['ReasonLs'][0]['ReasonName']}
+    should be Equal as Numbers    ${reason.json()['Code']}    ${Exp_code}
+    ${QXHZ_result}    合作流程_取消合作    ${C_Ak}    ${FQHZ_result.json()['Data']}    ${reason.json()['Data']['Items'][0]['ReasonLs'][0]['ReasonName']}    ${房成交申请_Precode}
+    log    取消合作_Message=${QXHZ_result.json()['Message']}
+    should be Equal as Numbers    ${QXHZ_result.json()['Code']}    ${Exp_code}
+
+合作流程_完整流程(包括评价)
+    ${销冠助手_房源ID_HouseId}    ${销冠助手_客源ID_CustomerId}    LinkMySql_查询匹配的房客源ID_预
+    ${SaleAmount}    LinkMySql_查询房源的售价    ${销冠助手_房源ID_HouseId}
+    ${Exp_Code}    Set Variable    0
+    ${房发起成交_Precode}    Set Variable    400    #房发起成交：400
+    ${销冠助手_发起合作方_source}    Set Variable    0
+    ${销冠助手_合作单备注_memo}    Set Variable    合作单备注
+    ${销冠助手_成交单单备注_memo}    Set Variable    成交单备注
+    ${销冠助手_客分成_cCommission}    Set Variable    5
+    ${销冠助手_房分成_hCommission}    Set Variable    5
+    ${销冠助手_预估佣金占比_commissionTotalPerc}    Set Variable    3
+    ${销冠助手_预估佣金总额_commissionTotalPrice}    Evaluate    ${SaleAmount}*${销冠助手_预估佣金占比_commissionTotalPerc}*0.01
+    ${销冠助手_房评价_labels}    Set Variable    房评价
+    ${销冠助手_客评价_labels}    Set Variable    客评价
+    ${OrderId_result}    合作流程_发起合作    ${H_Ak}    ${销冠助手_发起合作方_source}    ${销冠助手_合作单备注_memo}    ${销冠助手_客分成_cCommission}    ${销冠助手_房分成_hCommission}
+    ...    ${销冠助手_预估佣金占比_commissionTotalPerc}    ${销冠助手_预估佣金总额_commissionTotalPrice}    ${销冠助手_房源ID_HouseId}    ${销冠助手_客源ID_CustomerId}
+    should be Equal as Numbers    ${OrderId_result.json()['Code']}    ${Exp_Code}
+    log    发起合作_Message=${OrderId_result.json()['Message']}
+    ${TYHZ_result}    合作流程_同意合作    ${C_Ak}    ${OrderId_result.json()['Data']}
+    should be Equal as Numbers    ${TYHZ_result.json()['Code']}    ${Exp_Code}
+    log    同意合作_Message=${TYHZ_result.json()['Message']}
+    ${DK_result}    合作流程_带看到达    ${H_Ak}    ${OrderId_result.json()['Data']}
+    should be Equal as Numbers    ${DK_result.json()['Code']}    ${Exp_Code}
+    log    带看到达_Message=${DK_result.json()['Message']}
+    ${FQCJ_result}    合作流程_提交成交单    ${H_Ak}    ${OrderId_result.json()['Data']}    ${SaleAmount}    ${销冠助手_预估佣金占比_commissionTotalPerc}    ${销冠助手_预估佣金总额_commissionTotalPrice}
+    ...    ${销冠助手_房分成_hCommission}    ${销冠助手_客分成_cCommission}    ${销冠助手_成交单单备注_memo}
+    should be Equal as Numbers    ${FQCJ_result.json()['Code']}    ${Exp_Code}
+    log    发起成交_Message=${FQCJ_result.json()['Message']}
+    ${TYCJ_result}    合作流程_同意成交    ${C_Ak}    ${OrderId_result.json()['Data']}    ${房发起成交_Precode}
+    should be Equal as Numbers    ${TYCJ_result.json()['Code']}    ${Exp_Code}
+    log    同意成交_Message=${TYCJ_result.json()['Message']}
+    ${FPJ_result}    合作流程_房评价    ${H_Ak}    ${OrderId_result.json()['Data']}    ${销冠助手_房评价_labels}
+    should be Equal as Numbers    ${FPJ_result.json()['Code']}    ${Exp_Code}
+    log    房评价_Message=${FPJ_result.json()['Message']}
+    ${CKPJ_result}    合作流程_查看评价    ${H_Ak}    ${OrderId_result.json()['Data']}
+    should be Equal as Numbers    ${CKPJ_result.json()['Code']}    ${Exp_Code}
+    log    房查看评价_Message=${CKPJ_result.json()['Message']}
+    ${KPJ_result}    合作流程_客评价    ${C_Ak}    ${OrderId_result.json()['Data']}    ${销冠助手_客评价_labels}
+    should be Equal as Numbers    ${KPJ_result.json()['Code']}    ${Exp_Code}
+    log    房评价_Message=${KPJ_result.json()['Message']}
+    ${CKPJ_result1}    合作流程_查看评价    ${C_Ak}    ${OrderId_result.json()['Data']}
+    should be Equal as Numbers    ${CKPJ_result1.json()['Code']}    ${Exp_Code}
+    log    客查看评价_Message=${CKPJ_result.json()['Message']}
+
+订单_发起合作
+    ${OrderStatus}    set variable    1
+    ${Result111}    提交合作单    ${H_Ak}
+    log    OrderId111=${Result111.json()['Data']}
+    ${result}    查看订单列表    ${H_Ak}    ${OrderStatus}
+    log    OrderId=${result.json()['Data']['Items'][0]['BusinessList'][0]['OrderId']}
+    RunKeyword if    ${Result111.json()['Data']}==${result.json()['Data']['Items'][0]['BusinessList'][0]['OrderId']}    log    发起合作已产生订单
+    ${result_dic}    To json    ${result.content}
+    ${Data}    get from Dictionary    ${result_dic}    Data
+    ${Items}    get from Dictionary    ${Data}    Items
+    ${Length}    Evaluate    len(${Items})
+    : FOR    ${i}    IN RANGE    0    ${Length}
+    \    log    ${i}
+    : FOR    ${arr_Busines}    IN    ${result.json()['Data']['Items'][${i}]['BusinessList']}
+    \    log    ${result.json()['Data']['Items'][${i}]['BusinessList']}
+    ${Length1}    Evaluate    len(@{arr_Busines})
+    Comment    :FOR    ${OrderId}    in    ${BusinessList[0]['BusinessList']}
+    Comment    \    log    ${OrderId[0]['OrderId']}
+
+订单_取消合作
+
+订单_拒绝合作
+
+订单_取消合作申请
+
+订单_成交
+
+*** Keywords ***
+AddSaleHouse
+    [Arguments]    ${AK}
+    ${HouseStatus}    Set Variable    1    #1：有效 2：成交 3：他售 4：无效
+    ${CityName}    Set Variable    杭州市
+    ${VillageName}    Set Variable    春江花月
+    Comment    ${VillageName}    LinkMySql_查询房源小区名称
+    ${LabelType}    Set Variable    4    # 标签类型 1-付款方式 2-可签约人 \ 3-房源权属 4-户型 5-装修情况 6限制行业 7-房源标签
+    ${HouseLabel_result}    ${HouseType}    标签_获取户型标签    ${AK}
+    ${Village_result}    房源_获取房源小区    ${AK}    ${VillageName}    ${CityName}
+    ${result}    ${HouseId}    房源_新增出售房源    ${AK}    ${Village_result.json()['Data'][0]['Address']}    ${VillageName}    ${HouseType}
+    ...    ${Village_result.json()['Data'][0]['Lat']}    ${Village_result.json()['Data'][0]['Lng']}
+
+AddRentHouse
+    [Arguments]    ${AK}
+    ${HouseStatus}    Set Variable    1    #1：有效 2：成交 3：他售 4：无效
+    ${CityName}    Set Variable    杭州市
+    ${VillageName}    Set Variable    春江花月
+    Comment    ${VillageName}    LinkMySql_查询房源小区名称
+    ${LabelType}    Set Variable    4    # 标签类型 1-付款方式 2-可签约人 \ 3-房源权属 4-户型 5-装修情况 6限制行业 7-房源标签
+    ${HouseLabel_result}    ${HouseType}    标签_获取户型标签    ${AK}
+    ${Village_result}    房源_获取房源小区    ${AK}    ${VillageName}    ${CityName}
+    ${result}    房源_新增出租房源    ${AK}    ${Village_result.json()['Data'][0]['Address']}    ${VillageName}    ${HouseType}    ${Village_result.json()['Data'][0]['Lat']}
+    ...    ${Village_result.json()['Data'][0]['Lng']}    ${Village_result.json()['Data'][0]['VillageCode']}
+
+AddBuyCustomer
+    [Arguments]    ${C_Ak}
+    log    添加登录的账号密码
+    ${销冠助手_PropertyType}    Set Variable    1
+    ${销冠助手_最低价_StartQuote}    Set Variable    10
+    ${销冠助手_最高价_EndQuote}    Set Variable    1000
+    ${销冠助手_最小面积_StartArea}    Set Variable    10
+    ${销冠助手_最大面积_EndArea}    Set Variable    300
+    ${level}    Set Variable    1
+    ${HouseLabel_result}    ${HouseType}    标签_获取户型标签    ${C_AK}
+    ${BuyCustomer_result}    客源_新增求购客户    ${C_AK}    ${HouseType}    ${销冠助手_最低价_StartQuote}    ${销冠助手_最高价_EndQuote}    ${销冠助手_最小面积_StartArea}
+    ...    ${销冠助手_最大面积_EndArea}
+    log    Data=${BuyCustomer_result.json()['Data']}
+    log    Message=${BuyCustomer_result.json()['Message']}
+
+AddRentCustomer
+    [Arguments]    ${Ak}
+    ${销冠助手_PropertyType}    Set Variable    1
+    ${销冠助手_最低价_StartQuote}    Set Variable    10
+    ${销冠助手_最高价_EndQuote}    Set Variable    500
+    ${销冠助手_最小面积_StartArea}    Set Variable    10
+    ${销冠助手_最大面积_EndArea}    Set Variable    200
+    ${level}    Set Variable    1
+    ${HouseLabel_result}    ${HouseType}    标签_获取户型标签    ${Ak}
+    should be equal as numbers    ${HouseLabel_result.json()['Code']}    0    #Pass
+    log    获取户型Message=${HouseLabel_result.json()['Message']}
+    ${rentCustomer_result}    客源_新增求租客户    ${Ak}    ${HouseType}    ${销冠助手_最低价_StartQuote}    ${销冠助手_最高价_EndQuote}    ${销冠助手_最小面积_StartArea}
+    ...    ${销冠助手_最大面积_EndArea}
+    should be equal as numbers    ${rentCustomer_result.json()['Code']}    0    #Pass
+    log    新增求租Message=${rentCustomer_result.json()['Message']}
+
+提交合作单
+    [Arguments]    ${H_Ak}
+    ${销冠助手_房源ID_HouseId}    ${销冠助手_客源ID_CustomerId}    LinkMySql_查询匹配的房客源ID_预
+    ${SaleAmount}    LinkMySql_查询房源的售价    ${销冠助手_房源ID_HouseId}
+    ${销冠助手_发起合作方_source}    Set Variable    0    #房源方：0； 客源方：1
+    ${销冠助手_合作单备注_memo}    Set Variable    合作单备注
+    ${销冠助手_成交单单备注_memo}    Set Variable    成交单备注
+    ${销冠助手_客分成_cCommission}    Set Variable    5
+    ${销冠助手_房分成_hCommission}    Set Variable    5
+    ${销冠助手_预估佣金占比_commissionTotalPerc}    Set Variable    3
+    ${销冠助手_预估佣金总额_commissionTotalPrice}    Evaluate    ${SaleAmount}*${销冠助手_预估佣金占比_commissionTotalPerc}*0.01
+    ${销冠助手_房评价_labels}    Set Variable    非常好
+    ${销冠助手_订单result}    合作流程_发起合作    ${H_Ak}    ${销冠助手_发起合作方_source}    ${销冠助手_合作单备注_memo}    ${销冠助手_客分成_cCommission}    ${销冠助手_房分成_hCommission}
+    ...    ${销冠助手_预估佣金占比_commissionTotalPerc}    ${销冠助手_预估佣金总额_commissionTotalPrice}    ${销冠助手_房源ID_HouseId}    ${销冠助手_客源ID_CustomerId}
+    [Return]    ${销冠助手_订单result}
+
+新增求购
+    [Arguments]    ${ak}
+    Repeat Keyword    2000    AddBuyCustomer    ${ak}

@@ -1,0 +1,868 @@
+*** Settings ***
+Library           Public.py
+Library           RequestsLibrary
+Library           DatabaseLibrary
+Resource          Public_Keyword.txt
+
+*** Variables ***
+
+*** Keywords ***
+房源_获取房源小区
+    [Arguments]    ${ak}    ${villageName}    ${cityName}
+    ${time}    timenow
+    ${GetVillageNameInfo_SignData}    Create Dictionary    ak=${ak}    app=app_broker    agent=android    villageName=${villageName}    cityName=${cityName}
+    ${GetVillageNameInfo_Sign}    Sign    /Common/GetVillageInfoList    ${GetVillageNameInfo_SignData}    ${time}    app_broker
+    ${GetVillageNameInfo_Data}    Create Dictionary    ak=${ak}    app=app_broker    agent=android    villageName=${villageName}    cityName=${cityName}
+    ...    time=${time}
+    Comment    Create Session    GetVillageNameInfo    ${xgzs_URL}    ${xgzs_headers}
+    ${GetVillageNameInfo_addr}    Post request    销冠助手    /Common/GetVillageInfoList?sign=${GetVillageNameInfo_Sign}    ${GetVillageNameInfo_Data}    ${xgjj_headers}
+    log    Address=${GetVillageNameInfo_addr.json()['Data'][0]['Address']}
+    log    Lat=${GetVillageNameInfo_addr.json()['Data'][0]['Lat']}
+    log    Lng=${GetVillageNameInfo_addr.json()['Data'][0]['Lng']}
+    log    VillageCode=${GetVillageNameInfo_addr.json()['Data'][0]['VillageCode']}
+    [Return]    ${GetVillageNameInfo_addr}
+
+房源_新增房源小区
+    [Arguments]    ${ak}    ${villageName}    ${CityName}    ${Address}    ${AdminName}    ${BusinessName}
+    ...    ${Lat}    ${Lng}
+    ${time}    timenow
+    ${AddVillageInfo_SignData}    Create Dictionary    ak=${ak}    app=app_broker    agent=android    Address=${Address}    AdminName=${AdminName}
+    ...    BusinessName=${BusinessName}    CityName=${CityName}    Lat=${Lat}    Lng=${Lng}    VillageName=${VillageName}    isUserAdd=0
+    ${AddVillageInfo_Sign}    Sign    /Common/AddVillageInfo?    ${AddVillageInfo_SignData}    ${time}    app_broker
+    ${AddVillageInfo_Data}    Create Dictionary    ak=${ak}    app=app_broker    agent=android    villageName=${villageName}    cityName=${cityName}
+    ...    BusinessName=${BusinessName}    CityName=${CityName}    Lat=${Lat}    Lng=${Lng}    VillageName=${VillageName}    isUserAdd=0
+    ...    time=${time}
+    Comment    Create Session    GetVillageNameInfo    ${xgzs_URL}    ${xgzs_headers}
+    ${AddVillageInfo_addr}    Post request    销冠助手    /Common/AddVillageInfo?sign=${AddVillageInfo_Sign}    ${AddVillageInfo_Data}    ${xgjj_headers}
+    [Return]    ${AddVillageInfo_addr.content}
+
+房源_获取房源楼幢
+    [Arguments]    ${ak}
+    ${time}    timenow
+    ${GetBuildInfo_SignData}    Create Dictionary    ak=${ak}    app=app_broker    agent=android    villageCode=
+    ${GetBuildInfo_Sign}    Sign    /Common/GetBuildInfoList    ${GetBuildInfo_SignData}    ${time}    app_broker
+    ${GetBuildInfo_Data}    Create Dictionary    ak=${ak}    app=app_broker    agent=android    villageCode=    time=${time}
+    Comment    Create Session    BuildInfo    ${xgzs_URL}    ${xgzs_headers}
+    ${GetBuildInfo_addr}    Post request    销冠助手    /Common/GetBuildInfoList??sign=${GetBuildInfo_SignData}    ${GetBuildInfo_Data}    ${xgjj_headers}
+
+房源_新增出售房源
+    [Arguments]    ${ak}    ${Address}    ${VillageName}    ${HouseType}    ${Lat}    ${Lng}
+    ${OwnerName}    createname
+    ${OwnerSex}    createsex
+    ${OwnerPhone}    createPhone
+    ${Currentfloor}    get_Floor
+    ${Floor}    get_Floor
+    ${Totalfloor}    get_TotalFloor
+    ${S}    get_S
+    ${T}    get_T
+    ${C}    get_C
+    ${W}    get_W
+    ${Y}    get_Y
+    ${Building}    get_DongName
+    ${Unit}    get_UnitName
+    ${SaleAmount}    get_SaleAmount
+    ${CoveredArea}    ${UsingArea}    get_Area
+    ${Room}    get_RoomNum
+    ${RoomFullName}    get_RoomFullName    ${Building}    ${Unit}    ${Floor}    ${Room}
+    ${time}    timenow
+    ${AddSaleHouse_SignData}    Create Dictionary    ak=${ak}    agent=android    app=app_broker    PropertyType=1    Address=${Address}
+    ...    AdminName=    District=    VillageName=${VillageName}    BusinessName=    Building=${Building}    HouseType=${HouseType}
+    ...    OwnerName=${OwnerName}    Currentfloor=${Currentfloor}    Floor=${Floor}    Lat=${Lat}    Lng=${Lng}    S=${S}
+    ...    T=${T}    C=${C}    W=${W}    Y=${Y}    SaleAmount=${SaleAmount}    Unit=${Unit}
+    ...    Room=${Room}    UsingArea=${UsingArea}    CoveredArea=${CoveredArea}    TotalFloor=${TotalFloor}    OwnerSex=${OwnerSex}    Ownerships=商品房
+    ...    OwnerPhone=${OwnerPhone}    RoomFullName=${RoomFullName}    HouseAge=2013    HouseLabels=中装修,南北朝向    HasKey=False    IsOpenMatch=True
+    ...    Period=    Note=测试数据
+    ${AddSaleHouse_Sign}    Sign    /SaleHouse/Add    ${AddSaleHouse_SignData}    ${time}    app_broker
+    ${AddSaleHouse_Data}    Create Dictionary    ak=${ak}    agent=android    app=app_broker    PropertyType=1    Address=${Address}
+    ...    AdminName=    District=    VillageName=${VillageName}    BusinessName=    Building=${Building}    HouseType=${HouseType}
+    ...    OwnerName=${OwnerName}    Currentfloor=${Currentfloor}    Floor=${Floor}    Lat=${Lat}    Lng=${Lng}    S=${S}
+    ...    T=${T}    C=${C}    W=${W}    Y=${Y}    SaleAmount=${SaleAmount}    Unit=${Unit}
+    ...    Room=${Room}    UsingArea=${UsingArea}    CoveredArea=${CoveredArea}    TotalFloor=${TotalFloor}    OwnerSex=${OwnerSex}    Ownerships=商品房
+    ...    OwnerPhone=${OwnerPhone}    RoomFullName=${RoomFullName}    HouseAge=2013    HouseLabels=中装修,南北朝向    HasKey=False    IsOpenMatch=True
+    ...    Period=    Note=测试数据    time=${time}
+    Comment    Create Session    AddSaleHouse    ${xgzs_URL}    ${xgzs_headers}
+    ${AddSaleHouse_addr}    Post request    销冠助手    /SaleHouse/Add?sign=${AddSaleHouse_Sign}    ${AddSaleHouse_Data}    ${xgjj_headers}
+    log    HouseIdData=${AddSaleHouse_addr.json()['Data']}
+    [Return]    ${AddSaleHouse_addr.content}    ${AddSaleHouse_addr.json()['Data']}
+
+房源_新增出租房源
+    [Arguments]    ${ak}    ${Address}    ${VillageName}    ${HouseType}    ${Lat}    ${Lng}
+    ...    ${VillageCode}
+    ${OwnerName}    createname
+    ${OwnerSex}    createsex
+    ${OwnerPhone}    createPhone
+    ${Currentfloor}    get_Floor
+    ${Floor}    get_Floor
+    ${Totalfloor}    get_TotalFloor
+    ${S}    get_S
+    ${T}    get_T
+    ${C}    get_C
+    ${W}    get_W
+    ${Y}    get_Y
+    ${Building}    get_DongName
+    ${Unit}    get_UnitName
+    ${SaleAmount}    get_SaleAmount
+    ${CoveredArea}    ${UsingArea}    get_Area
+    ${Room}    get_RoomNum
+    ${RoomFullName}    get_RoomFullName    ${Building}    ${Unit}    ${Floor}    ${Room}
+    ${time}    timenow
+    ${AddRentHouse_SignData}    Create Dictionary    ak=${ak}    agent=android    app=app_broker    PropertyType=1    PropertyTypeName=住宅
+    ...    Address=${Address}    AdminName=    District=    Contractor=产权人    VillageName=${VillageName}    VillageCode=${VillageCode}
+    ...    BusinessName=    Building=${Building}    HouseType=${HouseType}    OwnerName=${OwnerName}    Currentfloor=${Currentfloor}    Floor=${Floor}
+    ...    Lat=${Lat}    Lng=${Lng}    S=${S}    T=${T}    C=${C}    W=${W}
+    ...    Y=${Y}    RentAmount=${SaleAmount}    Unit=${Unit}    Room=${Room}    UsingArea=${UsingArea}    CoveredArea=${CoveredArea}
+    ...    TotalFloor=${TotalFloor}    OwnerSex=${OwnerSex}    Ownerships=商品房    OwnerPhone=${OwnerPhone}    RoomFullName=${RoomFullName}    HouseAge=2013
+    ...    HouseLabels=中装修,南北朝向    HasKey=False    IsOpenMatch=True    Period=    HouseLabels=    Note=测试数据
+    ...    isfirst=1    PayType=季付
+    ${AddRentHouse_Sign}    Sign    /RentHouse/Add?    ${AddRentHouse_SignData}    ${time}    app_broker
+    ${AddRentHouse_Data}    Create Dictionary    ak=${ak}    agent=android    app=app_broker    PropertyType=1    PropertyTypeName=住宅
+    ...    Address=${Address}    AdminName=    District=    Contractor=产权人    VillageName=${VillageName}    VillageCode=${VillageCode}
+    ...    BusinessName=    Building=${Building}    HouseType=${HouseType}    OwnerName=${OwnerName}    Currentfloor=${Currentfloor}    Floor=${Floor}
+    ...    Lat=${Lat}    Lng=${Lng}    S=${S}    T=${T}    C=${C}    W=${W}
+    ...    Y=${Y}    RentAmount=${SaleAmount}    Unit=${Unit}    Room=${Room}    UsingArea=${UsingArea}    CoveredArea=${CoveredArea}
+    ...    TotalFloor=${TotalFloor}    OwnerSex=${OwnerSex}    Ownerships=商品房    OwnerPhone=${OwnerPhone}    RoomFullName=${RoomFullName}    HouseAge=2013
+    ...    HouseLabels=中装修,南北朝向    HasKey=False    IsOpenMatch=True    Period=    HouseLabels=    Note=测试数据
+    ...    isfirst=1    PayType=季付    time=${time}
+    Comment    Create Session    AddSaleHouse    ${xgzs_URL}    ${xgzs_headers}
+    ${AddRentHouse_addr}    Post request    销冠助手    /RentHouse/Add?sign=${AddRentHouse_Sign}    ${AddRentHouse_Data}    ${xgjj_headers}
+    log    RentHouseId=${AddRentHouse_addr.json()['Data']['Id']}
+    [Return]    ${AddRentHouse_addr}
+
+房源_获取出租房源列表
+    [Arguments]    ${ak}    ${houseStatus}
+    ${time}    timenow    #获取时间戳
+    ${RentHouseList_SignData}    Create Dictionary    ak=${ak}    app=app_broker    propertyType=1    pageSize=40    agent=android
+    ...    houseStatus=${houseStatus}    pageIndex=1
+    ${RentHouseList_sign}    Sign    /RentHouse/List    ${RentHouseList_SignData}    ${time}    app_broker
+    ${RentHouseList_data}    Create Dictionary    ak=${ak}    app=app_broker    propertyType=1    pageSize=40    agent=android
+    ...    houseStatus=${houseStatus}    pageIndex=1    time=${time}
+    Comment    Create Session    Get_SaleHouseList    ${xgzs_URL}    ${xgzs_headers}
+    ${RentHouseList_Addr}    Post Request    销冠助手    /RentHouse/List?sign=${RentHouseList_sign}    ${RentHouseList_data}
+    ${RentHouseList_count}    get_ItemCount    ${RentHouseList_Addr.content}
+    [Return]    ${RentHouseList_count}    ${RentHouseList_Addr.content}
+
+房源_获取出售房源详情
+    [Arguments]    ${ak}    ${Id}
+    ${time}    timeNow
+    ${SaleHouseDetail_SignData}    create dictionary    ak=${ak}    app=app_broker    Id=${Id}    agent=android
+    ${SaleHouseDetail_Sign}    sign    /SaleHouse/Detail    ${SaleHouseDetail_SignData}    ${time}    app_broker
+    ${SaleHouseDetail_Data}    create dictionary    ak=${ak}    app=app_broker    Id=${Id}    agent=android    time=${time}
+    Comment    Create Session    SaleHouseDetail    ${xgzs_URL}    ${xgzs_headers}
+    ${SaleHouseDetail_Addr}    Post Request    销冠助手    /SaleHouse/Detail?sign=${SaleHouseDetail_Sign}    ${SaleHouseDetail_Data}
+    ${SaleHouseDetail_Code}    get_code    ${SaleHouseDetail_Addr.content}
+    ${Message}    get_message    ${SaleHouseDetail_Addr.content}
+    Should be equal as Numbers    ${SaleHouseDetail_Code}    0
+    [Return]    ${SaleHouseDetail_Addr.content}
+
+房源_修改出售房源
+    [Arguments]    ${ak}    ${Address}    ${VillageName}    ${HouseType}    ${Lat}    ${Lng}
+    ...    ${Building}    ${Unit}    ${Room}    ${id}
+    ${OwnerName}    createname
+    ${OwnerSex}    createsex
+    ${OwnerPhone}    createPhone
+    ${Currentfloor}    get_Floor
+    ${Floor}    get_Floor
+    ${Totalfloor}    get_TotalFloor
+    ${S}    get_S
+    ${T}    get_T
+    ${C}    get_C
+    ${W}    get_W
+    ${Y}    get_Y
+    Comment    ${Building}    get_DongName
+    Comment    ${Unit}    get_UnitName
+    ${SaleAmount}    get_SaleAmount
+    ${CoveredArea}    ${UsingArea}    get_Area
+    ${Room}    get_RoomNum
+    ${RoomFullName}    get_RoomFullName    ${Building}    ${Unit}    ${Floor}    ${Room}
+    ${time}    timenow
+    ${UpdateSaleHouse_SignData}    Create Dictionary    id=${id}    ak=${ak}    agent=android    app=app_broker    PropertyType=1
+    ...    Address=${Address}    AdminName=    District=    VillageName=${VillageName}    BusinessName=    Building=${Building}
+    ...    HouseType=${HouseType}    OwnerName=${OwnerName}    Currentfloor=${Currentfloor}    Floor=${Floor}    Lat=${Lat}    Lng=${Lng}
+    ...    S=${S}    T=${T}    C=${C}    W=${W}    Y=${Y}    SaleAmount=${SaleAmount}
+    ...    Unit=${Unit}    Room=${Room}    UsingArea=${UsingArea}    CoveredArea=${CoveredArea}    TotalFloor=${TotalFloor}    OwnerSex=${OwnerSex}
+    ...    Ownerships=商品房    OwnerPhone=${OwnerPhone}    RoomFullName=${RoomFullName}    HouseAge=2013    HouseLabels=中装修,南北朝向    HasKey=False
+    ...    IsOpenMatch=True    Period=    Note=测试数据    VillageCode=
+    ${UpdateSaleHouse_Sign}    Sign    /SaleHouse/Update?    ${UpdateSaleHouse_SignData}    ${time}    app_broker
+    ${UpdateSaleHouse_Data}    Create Dictionary    id=${id}    ak=${ak}    agent=android    app=app_broker    PropertyType=1
+    ...    Address=${Address}    AdminName=    District=    VillageName=${VillageName}    BusinessName=    Building=${Building}
+    ...    HouseType=${HouseType}    OwnerName=${OwnerName}    Currentfloor=${Currentfloor}    Floor=${Floor}    Lat=${Lat}    Lng=${Lng}
+    ...    S=${S}    T=${T}    C=${C}    W=${W}    Y=${Y}    SaleAmount=${SaleAmount}
+    ...    Unit=${Unit}    Room=${Room}    UsingArea=${UsingArea}    CoveredArea=${CoveredArea}    TotalFloor=${TotalFloor}    OwnerSex=${OwnerSex}
+    ...    Ownerships=商品房    OwnerPhone=${OwnerPhone}    RoomFullName=${RoomFullName}    HouseAge=2013    HouseLabels=中装修,南北朝向    HasKey=False
+    ...    IsOpenMatch=True    Period=    Note=测试数据    VillageCode=    time=${time}
+    Comment    Create Session    UpdateSaleHouse    ${xgzs_URL}    ${xgzs_headers}
+    ${AddSaleHouse_addr}    Post request    销冠助手    /SaleHouse/Update?sign=${UpdateSaleHouse_Sign}    ${UpdateSaleHouse_Data}    ${xgzs_headers}
+    ${HouseId}    get_HouseId    ${AddSaleHouse_addr.content}
+    [Return]    ${HouseId}
+
+客源_客户列表
+    ${time}    timenow
+    ${客户_signdata}    create dictionary    ak=${ak}    app=app_broker    agent=android    updateTime=${updateTime}
+    ${客户_sign}    sign    /Owner/List?    ${客户_signdata}    ${time}    app_broker
+    ${客户_data}    create dictionary    ak=${ak}    app=app_broker    agent=android    updateTime=${updateTime}    time=${time}
+    create session    客户管理    ${xgzs_URL}    ${xgzs_headers}
+    ${result}    post request    客户管理    /Owner/List?sign=${客户_sign}    ${客户_data}
+    log    ${result.content}
+
+客源_添加头像(暂时不用)
+    [Arguments]    ${ak}
+    ${time}    timenow
+    ${AddFile_SignData}    Create Dictionary    ak=${ak}    app=app_broker    agent=android    picUrl=<file>    filename=222.jpg
+    ${AddFile_Sign}    Sign    /Common/AddFile?    ${AddFile_SignData}    ${time}    app_broker
+    ${AddFile_Data}    Create Dictionary    ak=${ak}    app=app_broker    agent=android    picUrl=<file>    filename=222.jpg
+    ...    time=${time}
+    Create Session    添加头像    ${xgzs_URL}    ${xgzs_headers}
+    ${AddFile_addr}    Post request    添加头像    /Common/AddFile?sign=${AddFile_Sign}    ${AddFile_Data}    ${xgzs_headers}
+    ${AddFile_Code}    get_code    ${AddFile_addr.content}
+    [Return]    ${AddFile_addr.content}
+
+客源_新增求购客户
+    [Arguments]    ${ak}    ${HouseType}    ${StartQuote}    ${EndQuote}    ${StartArea}    ${EndArea}
+    ${S}    get_S
+    ${T}    get_T
+    ${C}    get_C
+    ${W}    get_W
+    ${Y}    get_Y
+    ${STCWY}    get_STCWY    ${S}    ${T}    ${C}    ${W}    ${Y}
+    ${OwnerName}    createname
+    ${OwnerSex}    createsex
+    ${OwnerPhone}    createPhone
+    ${time}    timenow
+    ${xgzs_BuyCustomer_data}    create dictionary    Points=[{Lat:30.23702715413173,Lng:120.0532206247145},{Lat:30.2410957740156,Lng:120.0502921399794},{Lat:30.24414710395785,Lng:120.0502921399794},{Lat:30.24770689872102,Lng:120.0502921399794},{Lat:30.26041930500922,Lng:120.0502921399794},{Lat:30.26652068723353,Lng:120.0502921399794},{Lat:30.2726216864909,Lng:120.0502921399794},{Lat:30.27923063555172,Lng:120.0502921399794},{Lat:30.29397211979331,Lng:120.0502921399794},{Lat:30.31023597707713,Lng:120.0502921399794},{Lat:30.31633423422778,Lng:120.0502921399794},{Lat:30.32243210043186,Lng:120.0508778281539},{Lat:30.33716702756471,Lng:120.053806312889},{Lat:30.34326355326539,Lng:120.05556340373},{Lat:30.35545552250772,Lng:120.0602489705336},{Lat:30.36104298450716,Lng:120.0625917670941},{Lat:30.37018540597095,Lng:120.0678630308447},{Lat:30.37526414918345,Lng:120.0719629094737},{Lat:30.37983481151182,Lng:120.0766484850498},{Lat:30.38948323967144,Lng:120.0860196186569},{Lat:30.39862298973635,Lng:120.0965621549305},{Lat:30.40268485401316,Lng:120.1035905226809},{Lat:30.40725417509667,Lng:120.1117902667802},{Lat:30.41030030970876,Lng:120.1194043183188},{Lat:30.41334633310589,Lng:120.1270183830162},{Lat:30.41842282540469,Lng:120.1434178799874},{Lat:30.41994569827427,Lng:120.1522033276132},{Lat:30.42299141761451,Lng:120.1615744732825},{Lat:30.42502185903071,Lng:120.1703599214565},{Lat:30.42705224255941,Lng:120.1791453581166},{Lat:30.43009772261608,Lng:120.1973019640222},{Lat:30.43060530342476,Lng:120.2043303251931},{Lat:30.4316204570382,Lng:120.2125300627131},{Lat:30.4316204570382,Lng:120.2201441142517},{Lat:30.4316204570382,Lng:120.2289295640706},{Lat:30.4316204570382,Lng:120.243571974587},{Lat:30.4316204570382,Lng:120.2500146497766},{Lat:30.4316204570382,Lng:120.2570430131407},{Lat:30.42959015434436,Lng:120.2646570559068},{Lat:30.42654464307604,Lng:120.2722711074454},{Lat:30.4174075482822,Lng:120.2898420070831},{Lat:30.41233100264125,Lng:120.2986274525157},{Lat:30.40623879583669,Lng:120.3074128979484},{Lat:30.39963849461824,Lng:120.315026949487},{Lat:30.39354548787301,Lng:120.3226410010256},{Lat:30.38085049845605,Lng:120.3384548098223},{Lat:30.3757720484021,Lng:120.3448974850119},{Lat:30.35647143483375,Lng:120.354268618619},{Lat:30.34631170273093,Lng:120.356611406407},{Lat:30.33767508094759,Lng:120.3571970945815},{Lat:30.31887504317892,Lng:120.357782800301},{Lat:30.30972777992549,Lng:120.357782800301},{Lat:30.29702181107728,Lng:120.357782800301},{Lat:30.28482250166203,Lng:120.357782800301},{Lat:30.27211328483171,Lng:120.357782800301},{Lat:30.24668980548894,Lng:120.357782800301},{Lat:30.23448420198184,Lng:120.357782800301},{Lat:30.22329438405552,Lng:120.357782800301},{Lat:30.21312067373793,Lng:120.3571970945815},{Lat:30.2029459297741,Lng:120.3525115365505},{Lat:30.18208437686241,Lng:120.3320121521777},{Lat:30.17394206328049,Lng:120.3232267067451},{Lat:30.1642721832184,Lng:120.3120984647519},{Lat:30.15561938069738,Lng:120.2992131494628},{Lat:30.14747487022562,Lng:120.2869135311206},{Lat:30.13474770257264,Lng:120.2623142681188},{Lat:30.12863806189227,Lng:120.246500459322},{Lat:30.12558311738677,Lng:120.2353722392602},{Lat:30.12252806214972,Lng:120.221315512532},{Lat:30.11998210985391,Lng:120.2078444937164},{Lat:30.11794530790946,Lng:120.1850023226522},{Lat:30.11794530790946,Lng:120.1727027054066},{Lat:30.11794530790946,Lng:120.1615744732825},{Lat:30.120491305617,Lng:120.1510319293329},{Lat:30.12456476862329,Lng:120.1410750943925},{Lat:30.13372946454815,Lng:120.1240898982812},{Lat:30.1393296766873,Lng:120.1164758379701},{Lat:30.14696581505186,Lng:120.1094474833785},{Lat:30.1540923383967,Lng:120.1035905226809},{Lat:30.16223630833004,Lng:120.0977335575971},{Lat:30.17801330502903,Lng:120.0877767094979},{Lat:30.18819065074931,Lng:120.0836768308689},{Lat:30.19785816172967,Lng:120.0795769697848},{Lat:30.20701595867922,Lng:120.0748913854363},{Lat:30.21362939661424,Lng:120.0713772125267},{Lat:30.22634627213284,Lng:120.0655202518291},{Lat:30.23194118148216,Lng:120.0631774552686},{Lat:30.23702715413173,Lng:120.0614203644276},{Lat:30.24211289526403,Lng:120.0596632911316},{Lat:30.24719833820077,Lng:120.0584918796925},{Lat:30.2563515257014,Lng:120.0573204857985},{Lat:30.25991084333046,Lng:120.0567348063965},{Lat:30.26397850418832,Lng:120.056149100677},{Lat:30.26753754259704,Lng:120.05556340373},{Lat:30.27058804105081,Lng:120.05556340373},{Lat:30.27618040459302,Lng:120.054977706783},{Lat:30.27821390253904,Lng:120.054977706783},{Lat:30.27923063555172,Lng:120.054977706783},{Lat:30.28024738838062,Lng:120.054977706783},{Lat:30.28126409630475,Lng:120.054977706783}]    STCWY=${STCWY}    S=${S}    T=${T}    C=${C}
+    ...    W=${W}    Y=${Y}    HouseType=${HouseType}    PropertyType=1    OwnerName=${OwnerName}    OwnerSex=${OwnerSex}
+    ...    OwnerPhone=${OwnerPhone}    agent=ios    app=app_broker    ak=${ak}    StartQuote=${StartQuote}    EndQuote=${EndQuote}
+    ...    StartArea=${StartArea}    EndArea=${EndArea}    HouseLabels=
+    ${xgzs_BuyCustomer_Sign}    Sign    /Buy/Add    ${xgzs_BuyCustomer_data}    ${time}    app_broker
+    ${xgzs_BuyCustomer_data1}    create dictionary    Points=[{Lat:30.23702715413173,Lng:120.0532206247145},{Lat:30.2410957740156,Lng:120.0502921399794},{Lat:30.24414710395785,Lng:120.0502921399794},{Lat:30.24770689872102,Lng:120.0502921399794},{Lat:30.26041930500922,Lng:120.0502921399794},{Lat:30.26652068723353,Lng:120.0502921399794},{Lat:30.2726216864909,Lng:120.0502921399794},{Lat:30.27923063555172,Lng:120.0502921399794},{Lat:30.29397211979331,Lng:120.0502921399794},{Lat:30.31023597707713,Lng:120.0502921399794},{Lat:30.31633423422778,Lng:120.0502921399794},{Lat:30.32243210043186,Lng:120.0508778281539},{Lat:30.33716702756471,Lng:120.053806312889},{Lat:30.34326355326539,Lng:120.05556340373},{Lat:30.35545552250772,Lng:120.0602489705336},{Lat:30.36104298450716,Lng:120.0625917670941},{Lat:30.37018540597095,Lng:120.0678630308447},{Lat:30.37526414918345,Lng:120.0719629094737},{Lat:30.37983481151182,Lng:120.0766484850498},{Lat:30.38948323967144,Lng:120.0860196186569},{Lat:30.39862298973635,Lng:120.0965621549305},{Lat:30.40268485401316,Lng:120.1035905226809},{Lat:30.40725417509667,Lng:120.1117902667802},{Lat:30.41030030970876,Lng:120.1194043183188},{Lat:30.41334633310589,Lng:120.1270183830162},{Lat:30.41842282540469,Lng:120.1434178799874},{Lat:30.41994569827427,Lng:120.1522033276132},{Lat:30.42299141761451,Lng:120.1615744732825},{Lat:30.42502185903071,Lng:120.1703599214565},{Lat:30.42705224255941,Lng:120.1791453581166},{Lat:30.43009772261608,Lng:120.1973019640222},{Lat:30.43060530342476,Lng:120.2043303251931},{Lat:30.4316204570382,Lng:120.2125300627131},{Lat:30.4316204570382,Lng:120.2201441142517},{Lat:30.4316204570382,Lng:120.2289295640706},{Lat:30.4316204570382,Lng:120.243571974587},{Lat:30.4316204570382,Lng:120.2500146497766},{Lat:30.4316204570382,Lng:120.2570430131407},{Lat:30.42959015434436,Lng:120.2646570559068},{Lat:30.42654464307604,Lng:120.2722711074454},{Lat:30.4174075482822,Lng:120.2898420070831},{Lat:30.41233100264125,Lng:120.2986274525157},{Lat:30.40623879583669,Lng:120.3074128979484},{Lat:30.39963849461824,Lng:120.315026949487},{Lat:30.39354548787301,Lng:120.3226410010256},{Lat:30.38085049845605,Lng:120.3384548098223},{Lat:30.3757720484021,Lng:120.3448974850119},{Lat:30.35647143483375,Lng:120.354268618619},{Lat:30.34631170273093,Lng:120.356611406407},{Lat:30.33767508094759,Lng:120.3571970945815},{Lat:30.31887504317892,Lng:120.357782800301},{Lat:30.30972777992549,Lng:120.357782800301},{Lat:30.29702181107728,Lng:120.357782800301},{Lat:30.28482250166203,Lng:120.357782800301},{Lat:30.27211328483171,Lng:120.357782800301},{Lat:30.24668980548894,Lng:120.357782800301},{Lat:30.23448420198184,Lng:120.357782800301},{Lat:30.22329438405552,Lng:120.357782800301},{Lat:30.21312067373793,Lng:120.3571970945815},{Lat:30.2029459297741,Lng:120.3525115365505},{Lat:30.18208437686241,Lng:120.3320121521777},{Lat:30.17394206328049,Lng:120.3232267067451},{Lat:30.1642721832184,Lng:120.3120984647519},{Lat:30.15561938069738,Lng:120.2992131494628},{Lat:30.14747487022562,Lng:120.2869135311206},{Lat:30.13474770257264,Lng:120.2623142681188},{Lat:30.12863806189227,Lng:120.246500459322},{Lat:30.12558311738677,Lng:120.2353722392602},{Lat:30.12252806214972,Lng:120.221315512532},{Lat:30.11998210985391,Lng:120.2078444937164},{Lat:30.11794530790946,Lng:120.1850023226522},{Lat:30.11794530790946,Lng:120.1727027054066},{Lat:30.11794530790946,Lng:120.1615744732825},{Lat:30.120491305617,Lng:120.1510319293329},{Lat:30.12456476862329,Lng:120.1410750943925},{Lat:30.13372946454815,Lng:120.1240898982812},{Lat:30.1393296766873,Lng:120.1164758379701},{Lat:30.14696581505186,Lng:120.1094474833785},{Lat:30.1540923383967,Lng:120.1035905226809},{Lat:30.16223630833004,Lng:120.0977335575971},{Lat:30.17801330502903,Lng:120.0877767094979},{Lat:30.18819065074931,Lng:120.0836768308689},{Lat:30.19785816172967,Lng:120.0795769697848},{Lat:30.20701595867922,Lng:120.0748913854363},{Lat:30.21362939661424,Lng:120.0713772125267},{Lat:30.22634627213284,Lng:120.0655202518291},{Lat:30.23194118148216,Lng:120.0631774552686},{Lat:30.23702715413173,Lng:120.0614203644276},{Lat:30.24211289526403,Lng:120.0596632911316},{Lat:30.24719833820077,Lng:120.0584918796925},{Lat:30.2563515257014,Lng:120.0573204857985},{Lat:30.25991084333046,Lng:120.0567348063965},{Lat:30.26397850418832,Lng:120.056149100677},{Lat:30.26753754259704,Lng:120.05556340373},{Lat:30.27058804105081,Lng:120.05556340373},{Lat:30.27618040459302,Lng:120.054977706783},{Lat:30.27821390253904,Lng:120.054977706783},{Lat:30.27923063555172,Lng:120.054977706783},{Lat:30.28024738838062,Lng:120.054977706783},{Lat:30.28126409630475,Lng:120.054977706783}]    STCWY=${STCWY}    S=${S}    T=${T}    C=${C}
+    ...    W=${W}    Y=${Y}    HouseType=${HouseType}    PropertyType=1    OwnerName=${OwnerName}    OwnerSex=${OwnerSex}
+    ...    OwnerPhone=${OwnerPhone}    agent=ios    app=app_broker    ak=${ak}    StartQuote=${StartQuote}    EndQuote=${EndQuote}
+    ...    StartArea=${StartArea}    EndArea=${EndArea}    HouseLabels=    time=${time}
+    Comment    Create Session    BuyCustomer    ${Xgzs_Api}    ${xgzs_headers}
+    ${xgzs_BuyCustomer_Addr}    Post Request    销冠助手    /Buy/Add?sign=${xgzs_BuyCustomer_Sign}    ${xgzs_BuyCustomer_data1}    ${xgjj_headers}
+    [Return]    ${xgzs_BuyCustomer_Addr}
+
+客源_新增求租客户
+    [Arguments]    ${ak}    ${HouseType}    ${StartQuote}    ${EndQuote}    ${StartArea}    ${EndArea}
+    ${S}    get_S
+    ${T}    get_T
+    ${C}    get_C
+    ${W}    get_W
+    ${Y}    get_Y
+    ${STCWY}    get_STCWY    ${S}    ${T}    ${C}    ${W}    ${Y}
+    ${OwnerName}    createname
+    ${OwnerSex}    createsex
+    ${OwnerPhone}    createPhone
+    ${time}    timenow
+    ${xgzs_RentCustomer_data}    create dictionary    IsSystem=1    Note=    HasKey=1    Contractor=业主委托人,产权人    Points=[{Lat:30.23702715413173,Lng:120.0532206247145},{Lat:30.2410957740156,Lng:120.0502921399794},{Lat:30.24414710395785,Lng:120.0502921399794},{Lat:30.24770689872102,Lng:120.0502921399794},{Lat:30.26041930500922,Lng:120.0502921399794},{Lat:30.26652068723353,Lng:120.0502921399794},{Lat:30.2726216864909,Lng:120.0502921399794},{Lat:30.27923063555172,Lng:120.0502921399794},{Lat:30.29397211979331,Lng:120.0502921399794},{Lat:30.31023597707713,Lng:120.0502921399794},{Lat:30.31633423422778,Lng:120.0502921399794},{Lat:30.32243210043186,Lng:120.0508778281539},{Lat:30.33716702756471,Lng:120.053806312889},{Lat:30.34326355326539,Lng:120.05556340373},{Lat:30.35545552250772,Lng:120.0602489705336},{Lat:30.36104298450716,Lng:120.0625917670941},{Lat:30.37018540597095,Lng:120.0678630308447},{Lat:30.37526414918345,Lng:120.0719629094737},{Lat:30.37983481151182,Lng:120.0766484850498},{Lat:30.38948323967144,Lng:120.0860196186569},{Lat:30.39862298973635,Lng:120.0965621549305},{Lat:30.40268485401316,Lng:120.1035905226809},{Lat:30.40725417509667,Lng:120.1117902667802},{Lat:30.41030030970876,Lng:120.1194043183188},{Lat:30.41334633310589,Lng:120.1270183830162},{Lat:30.41842282540469,Lng:120.1434178799874},{Lat:30.41994569827427,Lng:120.1522033276132},{Lat:30.42299141761451,Lng:120.1615744732825},{Lat:30.42502185903071,Lng:120.1703599214565},{Lat:30.42705224255941,Lng:120.1791453581166},{Lat:30.43009772261608,Lng:120.1973019640222},{Lat:30.43060530342476,Lng:120.2043303251931},{Lat:30.4316204570382,Lng:120.2125300627131},{Lat:30.4316204570382,Lng:120.2201441142517},{Lat:30.4316204570382,Lng:120.2289295640706},{Lat:30.4316204570382,Lng:120.243571974587},{Lat:30.4316204570382,Lng:120.2500146497766},{Lat:30.4316204570382,Lng:120.2570430131407},{Lat:30.42959015434436,Lng:120.2646570559068},{Lat:30.42654464307604,Lng:120.2722711074454},{Lat:30.4174075482822,Lng:120.2898420070831},{Lat:30.41233100264125,Lng:120.2986274525157},{Lat:30.40623879583669,Lng:120.3074128979484},{Lat:30.39963849461824,Lng:120.315026949487},{Lat:30.39354548787301,Lng:120.3226410010256},{Lat:30.38085049845605,Lng:120.3384548098223},{Lat:30.3757720484021,Lng:120.3448974850119},{Lat:30.35647143483375,Lng:120.354268618619},{Lat:30.34631170273093,Lng:120.356611406407},{Lat:30.33767508094759,Lng:120.3571970945815},{Lat:30.31887504317892,Lng:120.357782800301},{Lat:30.30972777992549,Lng:120.357782800301},{Lat:30.29702181107728,Lng:120.357782800301},{Lat:30.28482250166203,Lng:120.357782800301},{Lat:30.27211328483171,Lng:120.357782800301},{Lat:30.24668980548894,Lng:120.357782800301},{Lat:30.23448420198184,Lng:120.357782800301},{Lat:30.22329438405552,Lng:120.357782800301},{Lat:30.21312067373793,Lng:120.3571970945815},{Lat:30.2029459297741,Lng:120.3525115365505},{Lat:30.18208437686241,Lng:120.3320121521777},{Lat:30.17394206328049,Lng:120.3232267067451},{Lat:30.1642721832184,Lng:120.3120984647519},{Lat:30.15561938069738,Lng:120.2992131494628},{Lat:30.14747487022562,Lng:120.2869135311206},{Lat:30.13474770257264,Lng:120.2623142681188},{Lat:30.12863806189227,Lng:120.246500459322},{Lat:30.12558311738677,Lng:120.2353722392602},{Lat:30.12252806214972,Lng:120.221315512532},{Lat:30.11998210985391,Lng:120.2078444937164},{Lat:30.11794530790946,Lng:120.1850023226522},{Lat:30.11794530790946,Lng:120.1727027054066},{Lat:30.11794530790946,Lng:120.1615744732825},{Lat:30.120491305617,Lng:120.1510319293329},{Lat:30.12456476862329,Lng:120.1410750943925},{Lat:30.13372946454815,Lng:120.1240898982812},{Lat:30.1393296766873,Lng:120.1164758379701},{Lat:30.14696581505186,Lng:120.1094474833785},{Lat:30.1540923383967,Lng:120.1035905226809},{Lat:30.16223630833004,Lng:120.0977335575971},{Lat:30.17801330502903,Lng:120.0877767094979},{Lat:30.18819065074931,Lng:120.0836768308689},{Lat:30.19785816172967,Lng:120.0795769697848},{Lat:30.20701595867922,Lng:120.0748913854363},{Lat:30.21362939661424,Lng:120.0713772125267},{Lat:30.22634627213284,Lng:120.0655202518291},{Lat:30.23194118148216,Lng:120.0631774552686},{Lat:30.23702715413173,Lng:120.0614203644276},{Lat:30.24211289526403,Lng:120.0596632911316},{Lat:30.24719833820077,Lng:120.0584918796925},{Lat:30.2563515257014,Lng:120.0573204857985},{Lat:30.25991084333046,Lng:120.0567348063965},{Lat:30.26397850418832,Lng:120.056149100677},{Lat:30.26753754259704,Lng:120.05556340373},{Lat:30.27058804105081,Lng:120.05556340373},{Lat:30.27618040459302,Lng:120.054977706783},{Lat:30.27821390253904,Lng:120.054977706783},{Lat:30.27923063555172,Lng:120.054977706783},{Lat:30.28024738838062,Lng:120.054977706783},{Lat:30.28126409630475,Lng:120.054977706783}]
+    ...    STCWY=${STCWY}    S=${S}    T=${T}    C=${C}    W=${W}    Y=${Y}
+    ...    HouseType=${HouseType}    PropertyType=1    OwnerName=${OwnerName}    OwnerSex=${OwnerSex}    OwnerPhone=${OwnerPhone}    agent=ios
+    ...    app=app_broker    ak=${ak}    StartQuote=${StartQuote}    EndQuote=${EndQuote}    StartArea=${StartArea}    EndArea=${EndArea}
+    ...    HouseLabels=
+    ${xgzs_RentCustomer_Sign}    Sign    /Rent/Add?    ${xgzs_RentCustomer_data}    ${time}    app_broker
+    ${xgzs_RentCustomer_data1}    create dictionary    IsSystem=1    Note=    HasKey=1    Contractor=业主委托人,产权人    Points=[{Lat:30.23702715413173,Lng:120.0532206247145},{Lat:30.2410957740156,Lng:120.0502921399794},{Lat:30.24414710395785,Lng:120.0502921399794},{Lat:30.24770689872102,Lng:120.0502921399794},{Lat:30.26041930500922,Lng:120.0502921399794},{Lat:30.26652068723353,Lng:120.0502921399794},{Lat:30.2726216864909,Lng:120.0502921399794},{Lat:30.27923063555172,Lng:120.0502921399794},{Lat:30.29397211979331,Lng:120.0502921399794},{Lat:30.31023597707713,Lng:120.0502921399794},{Lat:30.31633423422778,Lng:120.0502921399794},{Lat:30.32243210043186,Lng:120.0508778281539},{Lat:30.33716702756471,Lng:120.053806312889},{Lat:30.34326355326539,Lng:120.05556340373},{Lat:30.35545552250772,Lng:120.0602489705336},{Lat:30.36104298450716,Lng:120.0625917670941},{Lat:30.37018540597095,Lng:120.0678630308447},{Lat:30.37526414918345,Lng:120.0719629094737},{Lat:30.37983481151182,Lng:120.0766484850498},{Lat:30.38948323967144,Lng:120.0860196186569},{Lat:30.39862298973635,Lng:120.0965621549305},{Lat:30.40268485401316,Lng:120.1035905226809},{Lat:30.40725417509667,Lng:120.1117902667802},{Lat:30.41030030970876,Lng:120.1194043183188},{Lat:30.41334633310589,Lng:120.1270183830162},{Lat:30.41842282540469,Lng:120.1434178799874},{Lat:30.41994569827427,Lng:120.1522033276132},{Lat:30.42299141761451,Lng:120.1615744732825},{Lat:30.42502185903071,Lng:120.1703599214565},{Lat:30.42705224255941,Lng:120.1791453581166},{Lat:30.43009772261608,Lng:120.1973019640222},{Lat:30.43060530342476,Lng:120.2043303251931},{Lat:30.4316204570382,Lng:120.2125300627131},{Lat:30.4316204570382,Lng:120.2201441142517},{Lat:30.4316204570382,Lng:120.2289295640706},{Lat:30.4316204570382,Lng:120.243571974587},{Lat:30.4316204570382,Lng:120.2500146497766},{Lat:30.4316204570382,Lng:120.2570430131407},{Lat:30.42959015434436,Lng:120.2646570559068},{Lat:30.42654464307604,Lng:120.2722711074454},{Lat:30.4174075482822,Lng:120.2898420070831},{Lat:30.41233100264125,Lng:120.2986274525157},{Lat:30.40623879583669,Lng:120.3074128979484},{Lat:30.39963849461824,Lng:120.315026949487},{Lat:30.39354548787301,Lng:120.3226410010256},{Lat:30.38085049845605,Lng:120.3384548098223},{Lat:30.3757720484021,Lng:120.3448974850119},{Lat:30.35647143483375,Lng:120.354268618619},{Lat:30.34631170273093,Lng:120.356611406407},{Lat:30.33767508094759,Lng:120.3571970945815},{Lat:30.31887504317892,Lng:120.357782800301},{Lat:30.30972777992549,Lng:120.357782800301},{Lat:30.29702181107728,Lng:120.357782800301},{Lat:30.28482250166203,Lng:120.357782800301},{Lat:30.27211328483171,Lng:120.357782800301},{Lat:30.24668980548894,Lng:120.357782800301},{Lat:30.23448420198184,Lng:120.357782800301},{Lat:30.22329438405552,Lng:120.357782800301},{Lat:30.21312067373793,Lng:120.3571970945815},{Lat:30.2029459297741,Lng:120.3525115365505},{Lat:30.18208437686241,Lng:120.3320121521777},{Lat:30.17394206328049,Lng:120.3232267067451},{Lat:30.1642721832184,Lng:120.3120984647519},{Lat:30.15561938069738,Lng:120.2992131494628},{Lat:30.14747487022562,Lng:120.2869135311206},{Lat:30.13474770257264,Lng:120.2623142681188},{Lat:30.12863806189227,Lng:120.246500459322},{Lat:30.12558311738677,Lng:120.2353722392602},{Lat:30.12252806214972,Lng:120.221315512532},{Lat:30.11998210985391,Lng:120.2078444937164},{Lat:30.11794530790946,Lng:120.1850023226522},{Lat:30.11794530790946,Lng:120.1727027054066},{Lat:30.11794530790946,Lng:120.1615744732825},{Lat:30.120491305617,Lng:120.1510319293329},{Lat:30.12456476862329,Lng:120.1410750943925},{Lat:30.13372946454815,Lng:120.1240898982812},{Lat:30.1393296766873,Lng:120.1164758379701},{Lat:30.14696581505186,Lng:120.1094474833785},{Lat:30.1540923383967,Lng:120.1035905226809},{Lat:30.16223630833004,Lng:120.0977335575971},{Lat:30.17801330502903,Lng:120.0877767094979},{Lat:30.18819065074931,Lng:120.0836768308689},{Lat:30.19785816172967,Lng:120.0795769697848},{Lat:30.20701595867922,Lng:120.0748913854363},{Lat:30.21362939661424,Lng:120.0713772125267},{Lat:30.22634627213284,Lng:120.0655202518291},{Lat:30.23194118148216,Lng:120.0631774552686},{Lat:30.23702715413173,Lng:120.0614203644276},{Lat:30.24211289526403,Lng:120.0596632911316},{Lat:30.24719833820077,Lng:120.0584918796925},{Lat:30.2563515257014,Lng:120.0573204857985},{Lat:30.25991084333046,Lng:120.0567348063965},{Lat:30.26397850418832,Lng:120.056149100677},{Lat:30.26753754259704,Lng:120.05556340373},{Lat:30.27058804105081,Lng:120.05556340373},{Lat:30.27618040459302,Lng:120.054977706783},{Lat:30.27821390253904,Lng:120.054977706783},{Lat:30.27923063555172,Lng:120.054977706783},{Lat:30.28024738838062,Lng:120.054977706783},{Lat:30.28126409630475,Lng:120.054977706783}]
+    ...    STCWY=${STCWY}    S=${S}    T=${T}    C=${C}    W=${W}    Y=${Y}
+    ...    HouseType=${HouseType}    PropertyType=1    OwnerName=${OwnerName}    OwnerSex=${OwnerSex}    OwnerPhone=${OwnerPhone}    agent=ios
+    ...    app=app_broker    ak=${ak}    StartQuote=${StartQuote}    EndQuote=${EndQuote}    StartArea=${StartArea}    EndArea=${EndArea}
+    ...    HouseLabels=    time=${time}
+    Comment    Create Session    BuyCustomer    ${Xgzs_Api}    ${xgzs_headers}
+    ${xgzs_RentCustomer_Addr}    Post Request    销冠助手    /Rent/Add?sign=${xgzs_RentCustomer_Sign}    ${xgzs_RentCustomer_data1}
+    log    ${xgzs_RentCustomer_Addr.json()['Message']}
+    [Return]    ${xgzs_RentCustomer_Addr}
+
+标签_获取户型标签
+    [Arguments]    ${ak}
+    [Documentation]    \#dajd
+    ${time}    timenow
+    ${LabelHouse_SignData}    Create Dictionary    ak=${ak}    app=app_broker    agent=android    labelType=4    propertyType=1
+    ...    tradeType=1
+    ${LabelHouse_Sign}    Sign    /LabelHouse/Query    ${LabelHouse_SignData}    ${time}    app_broker
+    ${LabelHouse_Data}    Create Dictionary    ak=${ak}    app=app_broker    agent=android    labelType=4    propertyType=1
+    ...    tradeType=1    time=${time}
+    Comment    Create Session    LabelHouse    ${xgzs_URL}    ${xgzs_headers}
+    ${LabelHouse_addr}    Post request    销冠助手    /LabelHouse/Query?sign=${LabelHouse_Sign}    ${LabelHouse_Data}    ${xgjj_headers}
+    log    户型标签=${LabelHouse_addr.json()['Data'][0]['LabelName']}
+    [Return]    ${LabelHouse_addr}    ${LabelHouse_addr.json()['Data'][0]['LabelName']}
+
+标签_获取权属标签
+    [Arguments]    ${ak}
+    ${time}    timenow
+    ${LabelHouse_SignData}    Create Dictionary    ak=${ak}    app=app_broker    agent=android    labelType=3    propertyType=1
+    ...    tradeType=1
+    ${LabelHouse_Sign}    Sign    /LabelHouse/Query    ${LabelHouse_SignData}    ${time}    app_broker
+    ${LabelHouse_Data}    Create Dictionary    ak=${ak}    app=app_broker    agent=android    labelType=3    propertyType=1
+    ...    tradeType=1    time=${time}
+    Create Session    LabelHouse    ${xgzs_URL}    ${xgzs_headers}
+    ${LabelHouse_addr}    Post request    LabelHouse    /LabelHouse/Query?sign=${LabelHouse_Sign}    ${LabelHouse_Data}    ${xgzs_headers}
+    ${LabelHouse_Code}    get_code    ${LabelHouse_addr.content}
+    Should Be Equal As Numbers    ${LabelHouse_Code}    0
+    ${LabelHouse_LabelName}    get_HouseType    ${LabelHouse_addr.content}
+    [Return]    ${LabelHouse_LabelName}    ${LabelHouse_addr.content}
+
+标签_获取搜索常用标签
+    [Arguments]    ${ak}
+    ${time}    timenow
+    ${CommonLabel_SignData}    Create Dictionary    agent=android    app=app_broker    ak=${ak}    labelType=8    propertyType=1
+    ...    tradeType=0
+    ${CommonLabel_Sign}    sign    /LabelHouse/Query?    ${CommonLabel_SignData}    ${time}    app_broker
+    ${CommonLabel_Data}    Create Dictionary    agent=android    app=app_broker    ak=${ak}    labelType=8    propertyType=1
+    ...    tradeType=0    time=${time}
+    Create Session    CommonLabel    ${xgzs_URL}    ${xgzs_headers}
+    ${CommonLabel_addr}    Post Request    CommonLabel    /LabelHouse/Query?sign=${CommonLabel_Sign}    ${CommonLabel_Data}
+    [Return]    ${CommonLabel_addr.content}
+
+设置出售房源状态_无效
+    [Arguments]    ${ak}    ${Id}
+    ${time}    timeNow
+    ${SaleHouseSetStatus_SignData}    create dictionary    ak=${ak}    app=app_broker    agent=android    Id=${Id}    houseStatus=4
+    ${SaleHouseSetStatus_Sign}    sign    /SaleHouse/SetStatus    ${SaleHouseSetStatus_SignData}    ${time}    app_broker
+    ${SaleHouseSetStatus_Data}    create dictionary    ak=${ak}    app=app_broker    agent=android    Id=${Id}    houseStatus=4
+    ...    time=${time}
+    Comment    Create Session    SaleHouseSetStatus    ${xgzs_URL}    ${xgzs_headers}
+    ${SaleHouseSetStatus_Addr}    Post Request    销冠助手    /SaleHouse/SetStatus?sign=${SaleHouseSetStatus_Sign}    ${SaleHouseSetStatus_Data}
+    ${SaleHouseSetStatus_Code}    get_code    ${SaleHouseSetStatus_Addr.content}
+    Should be equal as Numbers    ${SaleHouseSetStatus_Code}    0
+    [Return]    ${SaleHouseSetStatus_Addr.content}
+
+设置出售房源状态_成交
+    [Arguments]    ${ak}    ${Id}
+    ${time}    timeNow
+    ${SaleHouseSetStatus_SignData}    create dictionary    ak=${ak}    app=app_broker    agent=android    Id=${Id}    houseStatus=2
+    ${SaleHouseSetStatus_Sign}    sign    /SaleHouse/SetStatus    ${SaleHouseSetStatus_SignData}    ${time}    app_broker
+    ${SaleHouseSetStatus_Data}    create dictionary    ak=${ak}    app=app_broker    agent=android    Id=${Id}    houseStatus=2
+    ...    time=${time}
+    Comment    Create Session    SaleHouseSetStatus    ${xgzs_URL}    ${xgzs_headers}
+    ${SaleHouseSetStatus_Addr}    Post Request    销冠助手    /SaleHouse/SetStatus?sign=${SaleHouseSetStatus_Sign}    ${SaleHouseSetStatus_Data}
+    [Return]    ${SaleHouseSetStatus_Addr.content}
+
+获取未读订单数
+    [Arguments]    ${ak}
+    ${time}    timenow
+    ${OrdersUnReadNum_SignData}    Create Dictionary    agent=android    app=app_broker    ak=${ak}
+    ${OrdersUnReadNum_Sign}    sign    /Common/OrdersUnReadNum?    ${OrdersUnReadNum_SignData}    ${time}    app_broker
+    ${OrdersUnReadNum_Data}    Create Dictionary    agent=android    app=app_broker    ak=${ak}    time=${time}
+    Create Session    OrdersUnReadNum    ${xgzs_URL}    ${xgzs_headers}
+    ${OrdersUnReadNum_addr}    Post Request    OrdersUnReadNum    /Common/OrdersUnReadNum?sign=${OrdersUnReadNum_Sign}    ${OrdersUnReadNum_Data}
+    [Return]    ${OrdersUnReadNum_addr.content}
+
+List_获取出售房源列表
+    [Arguments]    ${ak}    ${houseStatus}
+    ${headers}    Create Dictionary    User-Agent=com.kakao.topbroker/3.0.9-debug Dalvik/1.6.0 (Linux; U; Android 4.4.2; SM705 Build/SANFRANCISCO)      Content-Type=application/x-www-form-urlencoded
+    log    ${headers}
+    ${time}    timenow    #获取时间戳
+    ${SaleHouseList_SignData}    Create Dictionary    ak=${ak}    app=app_broker    propertyType=1    pageSize=40    agent=android
+    ...    houseStatus=${houseStatus}    pageIndex=1
+    ${SaleHouseList_sign}    Sign    /SaleHouse/List    ${SaleHouseList_SignData}    ${time}    app_broker
+    ${SaleHouseList_data}    Create Dictionary    ak=${ak}    app=app_broker    propertyType=1    pageSize=40    agent=android
+    ...    houseStatus=${houseStatus}    pageIndex=1    time=${time}
+    Create Session    销冠助手    @{Xgzs_Api}[1]    ${headers}
+    ${SaleHouseList_Addr}    Post Request    销冠助手    /SaleHouse/List?sign=${SaleHouseList_sign}    ${SaleHouseList_data}
+    Comment    ${SaleHouseList_count}    get_ItemCount    ${SaleHouseList_Addr.content}
+    ${SaleHouseList_Code}    get_code    ${SaleHouseList_Addr.content}
+    Comment    Should Be Equal As Numbers    ${SaleHouseList_Code}    0
+    [Return]    ${SaleHouseList_Addr}
+
+List_客户匹配数列表
+    ${time}    timenow
+    ${客户匹配数列表_signdata}    create dictionary    ak=${ak}    app=app_broker    agent=android
+    ${客户匹配数列表_sign}    sign    /Owner/MatchCountList?    ${客户匹配数列表_signdata}    ${time}    app_broker
+    ${客户匹配数列表_data}    create dictionary    ak=${ak}    app=app_broker    agent=android    time=${time}
+    create session    匹配数    ${xgzs_URL}    ${xgzs_headers}
+    ${result}    post request    匹配数    /Owner/MatchCountList?sign=${客户匹配数列表_sign}    ${客户匹配数列表_data}
+    log    ${result.content}
+
+List_获取出售匹配列表_我的客户
+    [Arguments]    ${ak}    ${id}    ${pageIndex}    ${pageSize}
+    ${time}    timenow    #获取时间戳
+    ${SaleHouseMatchList_SignData}    Create Dictionary    ak=${ak}    app=app_broker    agent=android    id=${id}    pageIndex=${pageIndex}
+    ...    pageSize=${pageSize}    type=1
+    ${SaleHouseMatchList_sign}    Sign    /SaleHouse/MatchList?    ${SaleHouseMatchList_SignData}    ${time}    app_broker
+    ${SaleHouseMatchList_data}    Create Dictionary    ak=${ak}    app=app_broker    agent=android    id=${id}    pageIndex=${pageIndex}
+    ...    pageSize=${pageSize}    type=1    time=${time}
+    Comment    Create Session    Get_SaleHouseList    ${xgzs_URL}    ${xgzs_headers}
+    ${SaleHouseMatchList_Addr}    Post Request    销冠助手    /SaleHouse/MatchList?sign=${SaleHouseMatchList_sign}    ${SaleHouseMatchList_data}
+    [Return]    ${SaleHouseMatchList_Addr}
+
+List_获取出售匹配列表_他人客户
+    [Arguments]    ${ak}    ${id}    ${pageIndex}    ${pageSize}
+    ${time}    timenow    #获取时间戳
+    ${SaleHouseMatchList_SignData}    Create Dictionary    ak=${ak}    app=app_broker    agent=android    id=${id}    pageIndex=${pageIndex}
+    ...    pageSize=${pageSize}    type=2
+    ${SaleHouseMatchList_sign}    Sign    /SaleHouse/MatchList?    ${SaleHouseMatchList_SignData}    ${time}    app_broker
+    ${SaleHouseMatchList_data}    Create Dictionary    ak=${ak}    app=app_broker    agent=android    id=${id}    pageIndex=${pageIndex}
+    ...    pageSize=${pageSize}    type=2    time=${time}
+    Comment    Create Session    Get_SaleHouseList    ${xgzs_URL}    ${xgzs_headers}
+    ${SaleHouseMatchList_Addr}    Post Request    销冠助手    /SaleHouse/MatchList?sign=${SaleHouseMatchList_sign}    ${SaleHouseMatchList_data}
+    ${SaleHouseMatchList_count}    get_ItemCount    ${SaleHouseMatchList_Addr.content}
+    [Return]    ${SaleHouseMatchList_Addr.content}
+
+List_获取委托单列表_进行中
+    [Arguments]    ${ak}    ${PageIndex}    ${PageSize}    ${Types}
+    [Documentation]    ${Types}-- \ 出售：21 \ 出租：22 \ 求购：23 \ 求租：24 \ 全部：21,22,23,24
+    ...
+    ...    Status------ \ 进行中：1,2 \ \ \ \ \ \ \ \ \ \ \ \ 已结束：3,4
+    ...
+    ...    PageIndex: 第几页，默认1
+    ...
+    ...    PageSize:一页显示多少条,默认20
+    ${time}    timenow
+    ${EntrustList_SignData}    Create Dictionary    agent=android    app=app_broker    ak=${ak}    PageIndex=${PageIndex}    PageSize=${PageSize}
+    ...    States=1,2    Types=${Types}
+    ${EntrustList_Sign}    sign    /Entrust/List?    ${EntrustList_SignData}    ${time}    app_broker
+    ${EntrustList_Data}    Create Dictionary    agent=android    app=app_broker    ak=${ak}    PageIndex=${PageIndex}    PageSize=${PageSize}
+    ...    States=1,2    Types=${Types}    time=${time}
+    Create Session    EntrustList    ${xgzs_URL}    ${xgzs_headers}
+    ${EntrustList_addr}    Post Request    EntrustList    /Entrust/List?sign=${EntrustList_Sign}    ${EntrustList_Data}
+
+List_获取委托单列表_已结束
+    [Arguments]    ${ak}    ${PageIndex}    ${PageSize}    ${Types}
+    ${time}    timenow
+    ${EntrustList_SignData}    Create Dictionary    agent=android    app=app_broker    ak=${ak}    PageIndex=${PageIndex}    PageSize=${PageSize}
+    ...    States=3,4    Types=${Types}
+    ${EntrustList_Sign}    sign    /Entrust/List?    ${EntrustList_SignData}    ${time}    app_broker
+    ${EntrustList_Data}    Create Dictionary    agent=android    app=app_broker    ak=${ak}    PageIndex=${PageIndex}    PageSize=${PageSize}
+    ...    States=3,4    Types=${Types}    time=${time}
+    Create Session    EntrustList    ${xgzs_URL}    ${xgzs_headers}
+    ${EntrustList_addr}    Post Request    EntrustList    /Entrust/List?sign=${EntrustList_Sign}    ${EntrustList_Data}
+    [Return]    ${EntrustList_addr.content}
+
+List_获取合作单列表
+    [Arguments]    ${ak}    ${PageIndex}    ${PageSize}    ${entrustId}    ${Types}
+    ${time}    timenow
+    ${TradeList_SignData}    Create Dictionary    agent=android    app=app_broker    ak=${ak}    PageIndex=${PageIndex}    PageSize=${PageSize}
+    ...    entrustId=${entrustId}    Types=${Types}
+    ${TradeList_Sign}    sign    /Trade/ListV2?    ${TradeList_SignData}    ${time}    app_broker
+    ${TradeList_Data}    Create Dictionary    agent=android    app=app_broker    ak=${ak}    PageIndex=${PageIndex}    PageSize=${PageSize}
+    ...    entrustId=${entrustId}    Types=${Types}    time=${time}
+    Create Session    合作单    ${xgzs_URL}    ${xgzs_headers}
+    ${TradeList_addr}    Post Request    合作单    /Trade/ListV2?sign=${TradeList_Sign}    ${TradeList_Data}
+    [Return]    ${TradeList_addr.content}
+
+List_获取合作列表
+    [Arguments]    ${ak}    ${entrustId}
+    [Documentation]    *OwnerId:客户Id*
+    ...
+    ...    *Id: 买房需求ID（即CustomerId）*
+    ...
+    ...    *HouseIds:意向房源Id*
+    ...
+    ...    *EarnestMoney: \ 诚意金*
+    ...
+    ...
+    ...    *EarnestMoneyId: \ 诚意金Id*
+    ${time}    timenow
+    ${TradeListV2_SignData}    create Dictionary    ak=${ak}    app=app_broker    agent=android    type=23    entrustId=${entrustId}
+    ...    pageIndex=1
+    ${TradeListV2_Sign}    sign    /Trade/ListV2?    ${TradeListV2_SignData}    ${time}    app_broker
+    ${TradeListV2_Data}    create Dictionary    ak=${ak}    app=app_broker    agent=android    type=23    entrustId=${entrustId}
+    ...    pageIndex=1    time=${time}
+    Create Session    TradeListV2    ${xgzs_URL}    ${xgzs_headers}
+    ${TradeListV2_Addr}    post Request    TradeListV2    /Trade/ListV2?sign=${TradeListV2_Sign}    ${TradeListV2_Data}
+
+List_获取搜索列表
+    [Arguments]    ${ak}    ${villageName}
+    [Documentation]    *Keyword:1(一室)，2(二室)，3（三室）----常用搜索*
+    ...
+    ...
+    ...    *Keyword:0(手动输入，搜索小区名) *
+    ${time}    timenow
+    ${SearchList_SignData}    Create Dictionary    agent=android    app=app_broker    ak=${ak}    keyword=0    pageIndex=1
+    ...    pageSize=10    villageName=${villageName}
+    ${SearchList_Sign}    sign    /SaleHouse/SearchList?    ${SearchList_SignData}    ${time}    app_broker
+    ${SearchList_Data}    Create Dictionary    agent=android    app=app_broker    ak=${ak}    keyword=0    pageIndex=1
+    ...    pageSize=10    villageName=${villageName}    time=${time}
+    Create Session    SearchList    ${xgzs_URL}    ${xgzs_headers}
+    ${SearchList_addr}    Post Request    SearchList    /SaleHouse/SearchList?sign=${SearchList_Sign}    ${SearchList_Data}
+    [Return]    ${SearchList_addr.content}
+
+诚意金_获取意向房源列表
+    [Arguments]    ${ak}    ${CEntrustId}
+    ${time}    timenow
+    ${SaleHouseGetDepositList_SignData}    create Dictionary    ak=${ak}    app=app_broker    CEntrustId=${CEntrustId}    agent=android
+    ${SaleHouseGetDepositList_Sign}    sign    /SaleHouse/GetDepositList?    ${SaleHouseGetDepositList_SignData}    ${time}    app_broker
+    ${SaleHouseGetDepositList_Data}    create Dictionary    ak=${ak}    app=app_broker    CEntrustId=${CEntrustId}    agent=android    time=${time}
+    Create Session    SaleHouseGetDepositList    ${xgzs_URL}    ${xgzs_headers}
+    ${SaleHouseGetDepositList_Addr}    post Request    SaleHouseGetDepositList    /SaleHouse/GetDepositList?sign=${SaleHouseGetDepositList_Sign}    ${SaleHouseGetDepositList_Data}
+    [Return]    ${SaleHouseGetDepositList_Addr.content}
+
+诚意金_缴纳诚意金
+    [Documentation]    *OwnerId:客户Id*
+    ...
+    ...    *Id: 买房需求ID（即CustomerId）*
+    ...
+    ...    *HouseIds:意向房源Id*
+    ...
+    ...    *EarnestMoney: \ 诚意金*
+    ${time}    timenow
+    ${PayEarnest_SignData}    create Dictionary    ak=${ak}    app=app_broker    agent=android    OwnerId=${OwnerId}    Id=${Id}
+    ...    houseIds=${houseIds}    EarnestMoney=${EarnestMoney}
+    ${PayEarnest_Sign}    sign    /Owner/PayEarnest?    ${PayEarnest_SignData}    ${time}    app_broker
+    ${PayEarnest_Data}    create Dictionary    ak=${ak}    app=app_broker    agent=android    OwnerId=${OwnerId}    Id=${Id}
+    ...    houseIds=${houseIds}    EarnestMoney=${EarnestMoney}    time=${time}
+    Create Session    PayEarnest    ${xgzs_URL}    ${xgzs_headers}
+    ${PayEarnest_Addr}    post Request    PayEarnest    /Owner/PayEarnest?sign=${PayEarnest_Sign}    ${PayEarnest_Data}
+
+诚意金_修改缴纳诚意金
+    [Arguments]    ${ak}    ${OwnerId}    ${Id}    ${houseIds}    ${EarnestMoney}    ${EarnestMoneyId}
+    [Documentation]    *OwnerId:客户Id*
+    ...
+    ...    *Id: 买房需求ID（即CustomerId）*
+    ...
+    ...    *HouseIds:意向房源Id*
+    ...
+    ...    *EarnestMoney: \ 诚意金*
+    ...
+    ...
+    ...    *EarnestMoneyId: \ 诚意金Id*
+    ${time}    timenow
+    ${ModifyEarnest_SignData}    create Dictionary    ak=${ak}    app=app_broker    agent=android    OwnerId=${OwnerId}    Id=${Id}
+    ...    houseIds=${houseIds}    EarnestMoney=${EarnestMoney}    EarnestMoneyId=${EarnestMoneyId}
+    ${ModifyEarnest_Sign}    sign    /Owner/ModifyEarnest?    ${ModifyEarnest_SignData}    ${time}    app_broker
+    ${ModifyEarnest_Data}    create Dictionary    ak=${ak}    app=app_broker    agent=android    OwnerId=${OwnerId}    Id=${Id}
+    ...    houseIds=${houseIds}    EarnestMoney=${EarnestMoney}    EarnestMoneyId=${EarnestMoneyId}    time=${time}
+    Create Session    ModifyEarnest    ${xgzs_URL}    ${xgzs_headers}
+    ${ModifyEarnest_Addr}    post Request    ModifyEarnest    /Owner/ModifyEarnest?sign=${ModifyEarnest_Sign}    ${ModifyEarnest_Data}
+
+诚意金_查看诚意金详情
+    [Arguments]    ${ak}    ${EarnestMoneyId}
+    [Documentation]    *OwnerId:客户Id*
+    ...
+    ...    *Id: 买房需求ID（即CustomerId）*
+    ...
+    ...    *HouseIds:意向房源Id*
+    ...
+    ...    *EarnestMoney: \ 诚意金*
+    ...
+    ...
+    ...    *EarnestMoneyId: \ 诚意金Id*
+    ${time}    timenow
+    ${GetEarnest_SignData}    create Dictionary    ak=${ak}    app=app_broker    agent=android    EarnestMoneyId=${EarnestMoneyId}
+    ${GetEarnest_Sign}    sign    /Owner/GetEarnest?    ${GetEarnest_SignData}    ${time}    app_broker
+    ${GetEarnest_Data}    create Dictionary    ak=${ak}    app=app_broker    agent=android    EarnestMoneyId=${EarnestMoneyId}    time=${time}
+    Create Session    PayEarnest    ${xgzs_URL}    ${xgzs_headers}
+    ${GetEarnest_Addr}    post Request    PayEarnest    /Owner/GetEarnest?sign=${GetEarnest_Sign}    ${GetEarnest_Data}
+
+诚意金_退还诚意金
+    [Arguments]    ${ak}    ${EarnestMoneyId}    ${Id}
+    [Documentation]    *OwnerId:客户Id*
+    ...
+    ...    *Id: 买房需求ID（即CustomerId）*
+    ...
+    ...    *HouseIds:意向房源Id*
+    ...
+    ...    *EarnestMoney: \ 诚意金*
+    ...
+    ...
+    ...    *EarnestMoneyId: \ 诚意金Id*
+    ${time}    timenow
+    ${RefundEarnest_SignData}    create Dictionary    ak=${ak}    app=app_broker    agent=android    EarnestMoneyId=${EarnestMoneyId}    Id=${Id}
+    ${RefundEarnest_Sign}    sign    /Owner/RefundEarnest?    ${RefundEarnest_SignData}    ${time}    app_broker
+    ${RefundEarnest_Data}    create Dictionary    ak=${ak}    app=app_broker    agent=android    EarnestMoneyId=${EarnestMoneyId}    Id=${Id}
+    ...    time=${time}
+    Create Session    RefundEarnest    ${xgzs_URL}    ${xgzs_headers}
+    ${RefundEarnest_Addr}    post Request    RefundEarnest    /Owner/RefundEarnest?sign=${RefundEarnest_Sign}    ${RefundEarnest_Data}
+
+诚意金_诚意金转定金
+    [Arguments]    ${ak}    ${DepositMoney}    ${Id}    ${OwnerId}    ${houseIds}
+    [Documentation]    *OwnerId:客户Id*
+    ...
+    ...    *Id: 买房需求ID（即CustomerId）*
+    ...
+    ...    *HouseIds:意向房源Id*
+    ...
+    ...    *EarnestMoney: \ 诚意金*
+    ...
+    ...
+    ...    *EarnestMoneyId: \ 诚意金Id*
+    ${time}    timenow
+    ${PayDeposit_SignData}    create Dictionary    ak=${ak}    app=app_broker    agent=android    OwnerId=${OwnerId}    Id=${Id}
+    ...    houseIds=${houseIds}    DepositMoney=${DepositMoney}
+    ${PayDeposit_Sign}    sign    /Owner/PayDeposit?    ${PayDeposit_SignData}    ${time}    app_broker
+    ${PayDeposit_Data}    create Dictionary    ak=${ak}    app=app_broker    agent=android    OwnerId=${OwnerId}    Id=${Id}
+    ...    houseIds=${houseIds}    DepositMoney=${DepositMoney}    time=${time}
+    Create Session    PayDeposit    ${xgzs_URL}    ${xgzs_headers}
+    ${PayDeposit_Addr}    post Request    PayDeposit    /Owner/PayDeposit?sign=${PayDeposit_Sign}    ${PayDeposit_Data}
+
+合作_获取合作单详情
+    [Arguments]    ${ak}    ${orderId}
+    ${time}    timenow
+    ${OrderDetail_SignData}    Create Dictionary    agent=android    app=app_broker    ak=${ak}    orderId=${orderId}
+    ${OrderDetail_Sign}    sign    /trade/orderDetailv2?    ${OrderDetail_SignData}    ${time}    app_broker
+    ${OrderDetail_Data}    Create Dictionary    agent=android    app=app_broker    ak=${ak}    orderId=${orderId}    time=${time}
+    Create Session    合作单详情    ${xgzs_URL}    ${xgzs_headers}
+    ${OrderDetail_addr}    Post Request    合作单详情    /trade/orderDetailv2?sign=${OrderDetail_Sign}    ${OrderDetail_Data}
+    [Return]    ${OrderDetail_addr.content}
+
+合作流程_发起合作
+    [Arguments]    ${ak}    ${source}    ${memo}    ${cCommission}    ${hCommission}    ${commissionTotalPerc}
+    ...    ${commissionTotalPrice}    ${HouseId}    ${customerId}
+    ${time}    timenow
+    ${xgzs_cooperation_data}    create Dictionary    action=1    agent=ios    ak=${ak}    app=app_broker    cCommission=${cCommission}
+    ...    hCommission=${hCommission}    commissionTotalPerc=${commissionTotalPerc}    commissionTotalPrice=${commissionTotalPrice}    customerId=${customerId}    houseId=${HouseId}    source=${source}
+    ${xgzs_cooperation_sign}    sign    /Trade/CooperateV2    ${xgzs_cooperation_data}    ${time}    app_broker
+    log    ${xgzs_cooperation_sign}
+    ${xgzs_cooperation_data1}    create Dictionary    action=1    agent=ios    ak=${ak}    app=app_broker    cCommission=${cCommission}
+    ...    hCommission=${hCommission}    commissionTotalPerc=${commissionTotalPerc}    commissionTotalPrice=${commissionTotalPrice}    customerId=${customerId}    houseId=${HouseId}    source=${source}
+    ...    time=${time}
+    Comment    create Session    发起合作    ${Xgzs_Api}    ${xgzs_headers}
+    ${xgzs_cooperation_addr}    post request    销冠助手    /Trade/CooperateV2?sign=${xgzs_cooperation_sign}    ${xgzs_cooperation_data1}    ${xgjj_headers}
+    [Return]    ${xgzs_cooperation_addr}
+
+合作流程_取消合作申请
+    [Arguments]    ${ak}    ${orderId}
+    ${time}    timenow
+    ${取消合作_SignData}    Create Dictionary    agent=android    app=app_broker    ak=${ak}    orderId=${orderId}    postCode=130
+    ...    preCode=100
+    ${取消合作_Sign}    sign    /Trade/v2/UpdateStatus?    ${取消合作_SignData}    ${time}    app_broker
+    ${取消合作_Data}    Create Dictionary    agent=android    app=app_broker    ak=${ak}    orderId=${orderId}    postCode=130
+    ...    preCode=100    time=${time}
+    Comment    Create Session    合作流程_取消合作    ${xgzs_URL}    ${xgzs_headers}
+    ${取消合作_addr}    Post Request    销冠助手    /Trade/v2/UpdateStatus?sign=${取消合作_Sign}    ${取消合作_Data}
+    [Return]    ${取消合作_addr}
+
+合作流程_同意合作
+    [Arguments]    ${ak}    ${orderId}
+    ${time}    timenow
+    ${xgzs_同意合作_data}    create dictionary    agent=ios    ak=${ak}    app=app_broker    orderId=${orderId}    postCode=110
+    ...    preCode=100
+    ${xgzs_同意合作_sign}    sign    /Trade/v2/UpdateStatus    ${xgzs_同意合作_data}    ${time}    app_broker
+    ${xgzs_同意合作_data1}    create dictionary    agent=ios    ak=${ak}    app=app_broker    orderId=${orderId}    postCode=110
+    ...    preCode=100    time=${time}
+    Comment    Create Session    同意合作    ${XgzsApi}    ${xgzs_head}
+    ${xgzs_Agree_addr}    Post Request    销冠助手    /Trade/v2/UpdateStatus?sign=${xgzs_同意合作_sign}    ${xgzs_同意合作_data1}    ${xgjj_headers}
+    [Return]    ${xgzs_Agree_addr}
+
+合作流程_拒绝合作
+    [Arguments]    ${ak}    ${orderId}
+    ${time}    timenow
+    ${xgzs_拒绝合作_data}    create dictionary    agent=ios    ak=${ak}    app=app_broker    orderId=${orderId}    postCode=120
+    ...    preCode=100
+    ${xgzs_拒绝合作_sign}    sign    /Trade/v2/UpdateStatus    ${xgzs_拒绝合作_data}    ${time}    app_broker
+    ${xgzs_拒绝合作_data1}    create dictionary    agent=ios    ak=${ak}    app=app_broker    orderId=${orderId}    postCode=120
+    ...    preCode=100    time=${time}
+    Comment    Create Session    拒绝合作    ${XgzsApi}    ${xgzs_head}
+    ${xgzs_reject_addr}    Post Request    销冠助手    /Trade/v2/UpdateStatus?sign=${xgzs_拒绝合作_sign}    ${xgzs_拒绝合作_data1}    ${xgjj_headers}
+    [Return]    ${xgzs_reject_addr}
+
+合作流程_带看到达
+    [Arguments]    ${ak}    ${orderId}
+    ${time}    timenow
+    ${xgzs_扫码带看_data}    create dictionary    agent=ios    ak=${ak}    app=app_broker    orderId=${orderId}    postCode=310
+    ...    preCode=110
+    ${xgzs_扫码带看_sign}    sign    /Trade/v2/UpdateStatus    ${xgzs_扫码带看_data}    ${time}    app_broker
+    ${xgzs_扫码带看_data1}    create dictionary    agent=ios    ak=${ak}    app=app_broker    orderId=${orderId}    postCode=310
+    ...    preCode=110    time=${time}
+    Comment    Create Session    扫码带看    ${XgzsApi}    ${xgzs_head}
+    ${xgzs_扫码带看_addr}    Post Request    销冠助手    /Trade/v2/UpdateStatus?sign=${xgzs_扫码带看_sign}    ${xgzs_扫码带看_data1}    ${xgjj_headers}
+    [Return]    ${xgzs_扫码带看_addr}
+
+合作流程_取消合作
+    [Arguments]    ${ak}    ${orderId}    ${processRemark}    ${preCode}
+    ${time}    timenow
+    ${TradeV2UpdateStatus_SignData}    Create Dictionary    agent=ios    ak=${ak}    app=app_broker    orderId=${orderId}    postCode=600
+    ...    preCode=${preCode}    processRemark=${processRemark}
+    ${TradeV2UpdateStatus_Sign}    Sign    /Trade/v2/UpdateStatus?    ${TradeV2UpdateStatus_SignData}    ${time}    app_broker
+    ${TradeV2UpdateStatus_Data}    Create Dictionary    agent=ios    ak=${ak}    app=app_broker    orderId=${orderId}    postCode=600
+    ...    preCode=${preCode}    processRemark=${processRemark}    time=${time}
+    Comment    Create Session    CancelCooperate    ${XgzsApi}    ${xgzs_head}
+    ${TradeV2UpdateStatus_Addr}    Post Request    销冠助手    /Trade/v2/UpdateStatus?sign=${TradeV2UpdateStatus_Sign}    ${TradeV2UpdateStatus_Data}
+    [Return]    ${TradeV2UpdateStatus_Addr}
+
+合作流程_提交成交单
+    [Arguments]    ${ak}    ${orderId}    ${postCode}    ${hammerPrice}    ${commissionTotalPerc}    ${commissionTotalPrice}
+    ...    ${hCommission}    ${cCommission}    ${memo}
+    ${销冠助手_贷款_loanName}    createname
+    ${销冠助手_过户_transferName}    createname
+    ${time}    timenow
+    ${xgzs_提交成交单_data}    create dictionary    agent=ios    ak=${ak}    app=app_broker    orderId=${orderId}    postCode=${postCode}
+    ...    preCode=310    hammerPrice=${hammerPrice}    commissionTotalPerc=${commissionTotalPerc}    commissionTotalPrice=${commissionTotalPrice}    hCommission=${hCommission}    cCommission=${cCommission}
+    ...    loanId=0    loanName=${销冠助手_过户_transferName}    transferId=0    transferName=${销冠助手_贷款_loanName}    memo=${memo}
+    ${xgzs_提交成交单_sign}    sign    /Trade/v2/UpdateStatus    ${xgzs_提交成交单_data}    ${time}    app_broker
+    ${xgzs_提交成交单_data1}    create dictionary    agent=ios    ak=${ak}    app=app_broker    orderId=${orderId}    postCode=${postCode}
+    ...    preCode=310    hammerPrice=${hammerPrice}    commissionTotalPerc=${commissionTotalPerc}    commissionTotalPrice=${commissionTotalPrice}    hCommission=${hCommission}    cCommission=${cCommission}
+    ...    loanId=0    loanName=${销冠助手_过户_transferName}    transferId=0    transferName=${销冠助手_贷款_loanName}    memo=${memo}    time=${time}
+    Comment    Create Session    提交成交单    ${XgzsApi}    ${xgzs_head}
+    ${xgzs_deal_addr}    Post Request    销冠助手    /Trade/v2/UpdateStatus?sign=${xgzs_提交成交单_sign}    ${xgzs_提交成交单_data1}    ${xgjj_headers}
+    [Return]    ${xgzs_deal_addr}
+
+合作流程_取消成交
+    [Arguments]    ${ak}    ${orderId}    ${preCode}
+    ${time}    timenow
+    ${xgzs_取消成交_data}    create dictionary    agent=ios    ak=${ak}    app=app_broker    orderId=${orderId}    postCode=430
+    ...    preCode=${preCode}
+    ${xgzs_取消成交_sign}    sign    /Trade/v2/UpdateStatus    ${xgzs_取消成交_data}    ${time}    app_broker
+    ${xgzs_取消成交_data1}    create dictionary    agent=ios    ak=${ak}    app=app_broker    orderId=${orderId}    postCode=430
+    ...    preCode=${preCode}    time=${time}
+    Comment    Create Session    取消成交    ${XgzsApi}    ${xgzs_head}
+    ${xgzs_cancel_addr}    Post Request    销冠助手    /Trade/v2/UpdateStatus?sign=${xgzs_取消成交_sign}    ${xgzs_取消成交_data1}    ${xgjj_headers}
+    [Return]    ${xgzs_cancel_addr}
+
+合作流程_同意成交
+    [Arguments]    ${ak}    ${orderId}    ${preCode}
+    ${time}    timenow
+    ${xgzs_同意成交_data}    create dictionary    agent=ios    ak=${ak}    app=app_broker    orderId=${orderId}    postCode=410
+    ...    preCode=${preCode}
+    ${xgzs_同意成交_sign}    sign    /Trade/v2/UpdateStatus    ${xgzs_同意成交_data}    ${time}    app_broker
+    ${xgzs_同意成交_data1}    create dictionary    agent=ios    ak=${ak}    app=app_broker    orderId=${orderId}    postCode=410
+    ...    preCode=${preCode}    time=${time}
+    Comment    Create Session    同意成交    ${XgzsApi}    ${xgzs_head}
+    ${xgzs_agree_addr}    Post Request    销冠助手    /Trade/v2/UpdateStatus?sign=${xgzs_同意成交_sign}    ${xgzs_同意成交_data1}    ${xgjj_headers}
+    [Return]    ${xgzs_agree_addr}
+
+合作流程_拒绝成交
+    [Arguments]    ${ak}    ${orderId}    ${preCode}
+    ${processRemark}    get_processRemark
+    ${time}    timenow
+    ${xgzs_同意成交_data}    create dictionary    agent=ios    ak=${ak}    app=app_broker    orderId=${orderId}    postCode=420
+    ...    preCode=${preCode}    processRemark=${processRemark}
+    ${xgzs_同意成交_sign}    sign    /Trade/v2/UpdateStatus    ${xgzs_同意成交_data}    ${time}    app_broker
+    ${xgzs_同意成交_data1}    create dictionary    agent=ios    ak=${ak}    app=app_broker    orderId=${orderId}    postCode=420
+    ...    preCode=${preCode}    processRemark=${processRemark}    time=${time}
+    Comment    Create Session    拒绝成交    ${XgzsApi}    ${xgzs_head}
+    ${xgzs_reject_addr}    Post Request    销冠助手    /Trade/v2/UpdateStatus?sign=${xgzs_同意成交_sign}    ${xgzs_同意成交_data1}    ${xgjj_headers}
+    [Return]    ${xgzs_reject_addr}
+
+合作流程_房评价
+    [Arguments]    ${ak}    ${orderId}    ${labels}
+    ${cooperationSatisfaction}    get_Satisfaction
+    ${realSatisfaction}    get_Satisfaction
+    ${timelySatisfaction}    get_Satisfaction
+    ${time}    timenow
+    ${xgzs_评价_data}    create Dictionary    agent=ios    ak=${ak}    app=app_broker    cooperationSatisfaction=${cooperationSatisfaction}    realSatisfaction=${realSatisfaction}
+    ...    timelySatisfaction=${timelySatisfaction}    labels=${labels}    orderId=${orderId}    postCode=501    preCode=410    targetBrokerId=54112
+    ${xgzs_评价_sign}    sign    /Trade/EvaluationV2    ${xgzs_评价_data}    ${time}    app_broker
+    ${xgzs_评价_data1}    create Dictionary    agent=ios    ak=${ak}    app=app_broker    cooperationSatisfaction=${cooperationSatisfaction}    realSatisfaction=${realSatisfaction}
+    ...    timelySatisfaction=${timelySatisfaction}    labels=${labels}    orderId=${orderId}    postCode=501    preCode=410    targetBrokerId=54112
+    ...    time=${time}
+    Comment    Create Session    评价    ${XgzsApi}    ${xgzs_head}
+    ${xgzs_评价_addr}    post request    销冠助手    /Trade/EvaluationV2?sign=${xgzs_评价_sign}    ${xgzs_评价_data1}    ${xgjj_headers}
+    [Return]    ${xgzs_评价_addr}
+
+合作流程_客评价
+    [Arguments]    ${ak}    ${orderId}    ${labels}
+    ${cooperationSatisfaction}    get_Satisfaction
+    ${realSatisfaction}    get_Satisfaction
+    ${timelySatisfaction}    get_Satisfaction
+    ${time}    timenow
+    ${xgzs_评价_data}    create Dictionary    agent=ios    ak=${ak}    app=app_broker    cooperationSatisfaction=${cooperationSatisfaction}    realSatisfaction=${realSatisfaction}
+    ...    timelySatisfaction=${timelySatisfaction}    labels=${labels}    orderId=${orderId}    postCode=500    preCode=410    targetBrokerId=20627
+    ${xgzs_评价_sign}    sign    /Trade/EvaluationV2    ${xgzs_评价_data}    ${time}    app_broker
+    ${xgzs_评价_data1}    create Dictionary    agent=ios    ak=${ak}    app=app_broker    cooperationSatisfaction=${cooperationSatisfaction}    realSatisfaction=${realSatisfaction}
+    ...    timelySatisfaction=${timelySatisfaction}    labels=${labels}    orderId=${orderId}    postCode=500    preCode=410    targetBrokerId=20627
+    ...    time=${time}
+    Comment    Create Session    评价    ${XgzsApi}    ${xgzs_head}
+    ${xgzs_评价_addr}    post request    销冠助手    /Trade/EvaluationV2?sign=${xgzs_评价_sign}    ${xgzs_评价_data1}    ${xgjj_headers}
+    [Return]    ${xgzs_评价_addr}
+
+合作流程_查看评价
+    [Arguments]    ${ak}    ${orderId}
+    ${cooperationSatisfaction}    get_Satisfaction
+    ${realSatisfaction}    get_Satisfaction
+    ${timelySatisfaction}    get_Satisfaction
+    ${time}    timenow
+    ${GetEvaluation_SignData}    create Dictionary    agent=ios    ak=${ak}    app=app_broker    orderId=${orderId}
+    ${GetEvaluation_Sign}    sign    /Trade/GetEvaluation    ${GetEvaluation_SignData}    ${time}    app_broker
+    ${GetEvaluation_Data}    create Dictionary    agent=ios    ak=${ak}    app=app_broker    orderId=${orderId}    time=${time}
+    Comment    Create Session    评价    ${XgzsApi}    ${xgzs_head}
+    ${GetEvaluation_addr}    post request    销冠助手    /Trade/GetEvaluation?sign=${GetEvaluation_Sign}    ${GetEvaluation_Data}
+    [Return]    ${GetEvaluation_addr}
+
+合作流程_合作跟进记录
+    [Arguments]    ${ak}    ${orderId}
+    ${time}    timenow
+    ${TradeProcessListv2_SignData}    Create Dictionary    agent=ios    ak={ak}    app=app_broker    orderId=${orderId}
+    ${TradeProcessListv2_Sign}    Sign    /Trade/ProcessListv2    ${TradeProcessListv2_SignData}    ${time}    app_broker
+    ${TradeProcessListv2_Data}    Create Dictionary    agent=ios    ak={ak}    app=app_broker    orderId=${orderId}    time=${time}
+    Comment    Create Session    合作跟进记录    ${XgzsApi}    ${xgzs_head}
+    ${TradeProcessListv2_Addr}    Post Request    销冠助手    /Trade/ProcessListv2?sign=${TradeProcessListv2_Sign}    ${TradeProcessListv2_Data}
+    [Return]    ${TradeProcessListv2_Addr}
+
+合作流程_取消合作理由
+    [Arguments]    ${ak}
+    ${time}    timenow
+    ${CancelCooperateReason_SignData}    Create Dictionary    agent=ios    ak=${ak}    app=app_broker
+    ${CancelCooperateReason_Sign}    Sign    /Trade/CancelCooperateReason?    ${CancelCooperateReason_SignData}    ${time}    app_broker
+    ${CancelCooperateReason_Data}    Create Dictionary    agent=ios    ak=${ak}    app=app_broker    time=${time}
+    Comment    Create Session    CancelCooperateReason    ${XgzsApi}    ${xgzs_head}
+    ${CancelCooperateReason_Addr}    Post Request    销冠助手    /Trade/CancelCooperateReason?sign=${CancelCooperateReason_Sign}    ${CancelCooperateReason_Data}
+    [Return]    ${CancelCooperateReason_Addr}
+
+标签_获取房源描述标签
+    [Arguments]    ${ak}
+    ${time}    timenow
+    ${LabelHouse_SignData}    Create Dictionary    ak=${ak}    app=app_broker    agent=android    labelType=7    propertyType=1
+    ...    tradeType=1
+    ${LabelHouse_Sign}    Sign    /LabelHouse/Query    ${LabelHouse_SignData}    ${time}    app_broker
+    ${LabelHouse_Data}    Create Dictionary    ak=${ak}    app=app_broker    agent=android    labelType=7    propertyType=1
+    ...    tradeType=1    time=${time}
+    Create Session    LabelHouse    ${xgzs_URL}    ${xgzs_headers}
+    ${LabelHouse_addr}    Post request    LabelHouse    /LabelHouse/Query?sign=${LabelHouse_Sign}    ${LabelHouse_Data}    ${xgzs_headers}
+    ${LabelHouse_Code}    get_code    ${LabelHouse_addr.content}
+    Should Be Equal As Numbers    ${LabelHouse_Code}    0
+    ${LabelHouse_LabelName}    get_HouseType    ${LabelHouse_addr.content}
+    [Return]    ${LabelHouse_LabelName}    ${LabelHouse_addr.content}
+
+LinkMySql_获取小区名
+    Connect To Database Using Custom Params    pymysql    host='tops001rc.mysql.rds.aliyuncs.com',port =3648,user='commondata_dba',passwd='3hM7l3tBygb55QOEA3O4SXdzjy4R0o',db='commondata',charset='utf8'
+    ${villageName}    Query    select name from house_building where city_id=112 and type=2 and name not like '%)' limit 1
+    Disconnect from database
+    [Return]    ${villageName[0][0]}
+
+LinkMySql_查询买房客户委托单号
+    [Arguments]    ${查询买房委托单号}
+    Connect To Database Using Custom Params    pymysql    host='tops001rc.mysql.rds.aliyuncs.com',port =3648,user='top_cjzs_dba',passwd='Upv5gZxZgnVmLg3K6xsD3heM6Zkkxu',db='top_cjzs'
+    ${EntrustId}    Query    ${查询买房委托单号}
+    log    ${EntrustId[0][0]}
+    [Return]    ${EntrustId[0][0]}
+
+LinkMySql_查询匹配的房客源ID_预
+    Connect To Database Using Custom Params    pymysql    host='rdsbpt8yxeetu377qcb7.mysql.rds.aliyuncs.com',port =3306,user='top_cjzs_dba',passwd='Upv5gZxZgnVmLg3K6xsD3heM6Zkkxu',db='top_cjzs'    #host='rdswd6l0y421gu8vhrayf.mysql.rds.aliyuncs.com',port =3306,user='top_cjzs_dba',passwd='AP47xibGQsJuGzls8aDa7TduMXcBeU',db='top_cjzs'
+    ${HouseId1}    Query    select \ HouseId from \ cjzs_salematch where TradeState=0 and IsDeleted=0 and OrderId=0 and HouseId in(select Id from cjzs_salehouse where HouseStatus=1 and IsDeleted=0 and BrokerId=20627) and CustomerId in(select Id from cjzs_buycustomer where HouseStatus=1 and IsDeleted=0 and BrokerId=152087 and MatchNum !=0) limit 1
+    ${CustomerId1}    Query    select \ CustomerId from \ cjzs_salematch where TradeState=0 and IsDeleted=0 and OrderId=0 and HouseId in(select Id from cjzs_salehouse where HouseStatus=1 and IsDeleted=0 and BrokerId=20627) and CustomerId in(select Id from cjzs_buycustomer where HouseStatus=1 and IsDeleted=0 and BrokerId=152087 and MatchNum !=0) limit 1
+    log    ${HouseId1[0][0]}
+    log    ${CustomerId1[0][0]}
+    [Return]    ${HouseId1[0][0]}    ${CustomerId1[0][0]}
+
+LinkMySql_查询房源ID
+    Connect To Database Using Custom Params    pymysql    host='rdswd6l0y421gu8vhrayf.mysql.rds.aliyuncs.com',port =3306,user='top_cjzs_dba',passwd='Upv5gZxZgnVmLg3K6xsD3heM6Zkkxu',db='top_cjzs'
+    ${HouseId1}    Query    select Id from cjzs_salehouse where HouseStatus=1 and IsDeleted=0 and BrokerId=20627 and IsSystem=0 and CityId=112 limit 1
+    log    ${HouseId1[0]}
+    [Return]    ${HouseId1[0]}
+
+LinkMySql_查询房源的售价
+    [Arguments]    ${HouseId}
+    Connect To Database Using Custom Params    pymysql    host='rdswd6l0y421gu8vhrayf.mysql.rds.aliyuncs.com',port =3306,user='top_cjzs_dba',passwd='AP47xibGQsJuGzls8aDa7TduMXcBeU',db='top_cjzs'
+    ${SaleAmount}    Query    select SaleAmount from cjzs_saleHouse where Id=${HouseId}
+    log    ${SaleAmount[0][0]}
+    [Return]    ${SaleAmount[0][0]}
+
+LinkMySql_查询房源小区名称
+    Connect To Database Using Custom Params    pymysql    host='rdswd6l0y421gu8vhrayf.mysql.rds.aliyuncs.com',port =3306,user='commondata',passwd='5CFGTUjscnKCIG8kyxg0qd7EZ26aPO',db='commondata',charset='utf8'
+    Comment    ${Villagename}    Query    select name from house_building where city_id=112 and name not like '%（%'and name not like '%¡¤%' \ Order by rand() limit 1
+    @{Villagename}    Query    select name from house_building where city_id=112 and name not like '%（%'and name not like '%¡¤%'
+    log many    @{Villagename}
+    Comment    log    ${Villagename[0][0]}
+    [Return]    @{Villagename}
+
+LinkMysql_已发起的合作订单（房发起）
+    Connect To Database Using Custom Params    pymysql    host='rdsbpt8yxeetu377qcb7.mysql.rds.aliyuncs.com',port =3306,user='top_cjzs_dba',passwd='Upv5gZxZgnVmLg3K6xsD3heM6Zkkxu',db='top_cjzs'    #Upv5gZxZgnVmLg3K6xsD3heM6Zkkxu
+    ${OrderId}    Query    select \ Id \ from \ cjzs_trade_order_v2 \ where HBrokerId=20627 and CBrokerId=152087 and IsClose=0 and OrderStatus=100 \ limit 1
+    log    ${OrderId[0][0]}
+    [Return]    ${OrderId[0][0]}
+
+LinkMysql_可带看到达合作订单
+    Connect To Database Using Custom Params    pymysql    host='rdsbpt8yxeetu377qcb7.mysql.rds.aliyuncs.com',port =3306,user='top_cjzs_dba',passwd='Upv5gZxZgnVmLg3K6xsD3heM6Zkkxu',db='top_cjzs'    #Upv5gZxZgnVmLg3K6xsD3heM6Zkkxu
+    ${OrderId}    Query    select \ Id from \ cjzs_trade_order_v2 \ where Source=0 and HBrokerId=20627 and CBrokerId=152087 and IsClose=0 and OrderStatus=110 \ limit 1
+    log    ${OrderId[0][0]}
+    [Return]    ${OrderId[0][0]}
+
+LinkMysql_可发起成交订单
+    Connect To Database Using Custom Params    pymysql    host='rdsbpt8yxeetu377qcb7.mysql.rds.aliyuncs.com',port =3306,user='top_cjzs_dba',passwd='Upv5gZxZgnVmLg3K6xsD3heM6Zkkxu',db='top_cjzs'    #Upv5gZxZgnVmLg3K6xsD3heM6Zkkxu
+    ${OrderId}    Query    select \ Id from \ cjzs_trade_order_v2 \ where Source=0 and HBrokerId=20627 and CBrokerId=152087 and IsClose=0 and OrderStatus=310 \ limit 1
+    log    ${OrderId[0][0]}
+    [Return]    ${OrderId[0][0]}
+
+LinkMysql_可取消的成交订单
+    Connect To Database Using Custom Params    pymysql    host='rdsbpt8yxeetu377qcb7.mysql.rds.aliyuncs.com',port =3306,user='top_cjzs_dba',passwd='Upv5gZxZgnVmLg3K6xsD3heM6Zkkxu',db='top_cjzs'    #Upv5gZxZgnVmLg3K6xsD3heM6Zkkxu
+    ${OrderId}    Query    select \ Id from \ cjzs_trade_order_v2 \ where Source=0 and HBrokerId=20627 and CBrokerId=152087 and IsClose=0 and (OrderStatus=400 or OrderStatus=401) limit 1
+    log    ${OrderId[0][0]}
+    [Return]    ${OrderId[0][0]}

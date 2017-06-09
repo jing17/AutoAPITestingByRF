@@ -1,0 +1,19 @@
+*** Test Cases ***
+q
+    ${mobile}    Set Variable    13486939171
+    ${password}    Get MD5    123456
+    ${newPwd}    Get MD5    111111
+    ${userinfo}    登录成功流程    ${mobile}    ${password}    #前置条件：登录
+    ${oldPwd}    yh_获取原密码    ${mobile}
+    log    ${userinfo}
+    ${res}    yh_修改密码    ${newPwd}    ${oldPwd}    ${userinfo['token']}    ${userinfo['userId']}
+    log    ${res['message']}
+    Should Be Equal As Numbers    ${res['code']}    200
+    恢复_设置用户为不可用    ${mobile}    #场景恢复
+
+choujiang
+    : FOR    ${n}    IN RANGE    1
+    \    ${res}    choujiang
+    \    log    ${n}
+    \    log    ${res['message']}
+    \    run keyword if    ${res['code']}==200    log    ${res['result']['prizeName']}

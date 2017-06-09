@@ -1,0 +1,32 @@
+*** Settings ***
+Suite Setup       用例初始化
+Resource          ../数据.txt
+Library           ../common.py
+Resource          ../通用接口.txt
+Resource          ../前置流程.txt
+
+*** Variables ***
+${mobile}         13486939171
+${pwd}            123456
+
+*** Test Cases ***
+正确注册
+    [Setup]    场景恢复
+    yh_发送注册验证码    ${mobile}    86
+    ${code}    yh_获取注册验证码    ${mobile}
+    ${res}    yh_注册    ${mobile}    ${pwd}    ${code}
+    log    ${res['message']}
+    Should Be Equal As Numbers    ${res['code']}    200
+    [Teardown]    场景恢复
+
+错误验证码
+    [Setup]    场景恢复
+    yh_发送注册验证码    ${mobile}    86
+    ${res}    yh_注册    ${mobile}    ${pwd}    000000
+    log    ${res['message']}
+    Should Be Equal As Numbers    ${res['code']}    -1
+    [Teardown]    场景恢复
+
+*** Keywords ***
+场景恢复
+    恢复_设置用户为不可用    ${mobile}
