@@ -1,7 +1,5 @@
 *** Settings ***
 Suite Setup       用例初始化
-Resource          ../SQL.txt
-Library           ../common.py
 Resource          ../API/用户端API.txt
 Resource          ../API/Combo_API.txt
 

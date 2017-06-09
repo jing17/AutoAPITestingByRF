@@ -4,7 +4,7 @@ Library           Selenium2Library
 Library           requests
 Library           Collections
 Library           DatabaseLibrary
-Library           common.py
+Library           Common/common.py
 Resource          SQL.txt
 Resource          API/用户端API.txt
 Resource          API/Combo_API.txt

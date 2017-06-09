@@ -1,7 +1,7 @@
 *** Settings ***
 Resource          用户端API.txt
-Resource          SQL.txt
-Library           common.py
+Resource          ../SQL.txt
+Library           ../Common/common.py
 
 *** Keywords ***
 注册成功流程

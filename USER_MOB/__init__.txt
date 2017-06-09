@@ -1,5 +1,5 @@
 *** Settings ***
 Resource          ../SQL.txt
-Resource          ../用户端API.txt
-Resource          ../Combo_API.txt
-Library           ../common.py
+Resource          ../API/用户端API.txt
+Resource          ../API/Combo_API.txt
+Library           ../Common/common.py
