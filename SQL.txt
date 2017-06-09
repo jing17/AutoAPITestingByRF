@@ -18,7 +18,7 @@ yh_获取注册验证码
 yh_获取找回密码验证码
     [Arguments]    ${mobile}
     连接数据库
-    ${str}    Query    SELECT code FROM develop.cs_code_send where mobile=${mobile} \ and type=2 and state='E' order by valid_time desc limit 1;
+    ${str}    Query    SELECT code FROM develop.cs_code_send where mobile=${mobile} \ and type='找回密码验证码' and state='E' order by valid_time desc limit 1;
     断开数据库连接
     [Return]    ${str[0][0]}
 

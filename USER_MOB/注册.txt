@@ -2,8 +2,8 @@
 Suite Setup       用例初始化
 Resource          ../SQL.txt
 Library           ../common.py
-Resource          ../用户端API.txt
-Resource          ../Combo_API.txt
+Resource          ../API/用户端API.txt
+Resource          ../API/Combo_API.txt
 
 *** Variables ***
 ${mobile}         19910505123

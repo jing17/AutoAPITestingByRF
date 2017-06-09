@@ -6,8 +6,8 @@ Library           Collections
 Library           DatabaseLibrary
 Library           common.py
 Resource          SQL.txt
-Resource          用户端API.txt
-Resource          Combo_API.txt
+Resource          API/用户端API.txt
+Resource          API/Combo_API.txt
 
 *** Variables ***
 
