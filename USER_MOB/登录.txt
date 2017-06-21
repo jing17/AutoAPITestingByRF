@@ -30,6 +30,18 @@ ${pwd}            123456
     Should Be Equal As Numbers    ${res['code']}    -1
     [Teardown]    场景恢复
 
+用户名为空
+    [Setup]
+    ${res}    yh_登录    ${empty}    123456
+    log    ${res['message']}
+    Should Be Equal As Numbers    ${res['code']}    -1
+
+密码为空
+    [Setup]    前置条件
+    ${res}    yh_登录    ${mobile}    ${empty}
+    log    ${res['message']}
+    Should Be Equal As Numbers    ${res['code']}    -1
+
 *** Keywords ***
 前置条件
     注册成功流程    ${mobile}    ${pwd}
